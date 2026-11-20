@@ -1,5 +1,5 @@
 // Data layer + small UI helpers shared by the player and leaderboard pages.
-import { SUPABASE, GAME_ID, ROSTER } from './config.js';
+import { SUPABASE, GAME_ID, GANGS, ROSTER } from './config.js';
 import { HAND, GAME } from './rules.js';
 
 export const isDemo = !SUPABASE.url.startsWith('https://');
@@ -191,10 +191,11 @@ export function howHTML() {
 
 // Avatars: the photo listed in config.js ROSTER, or coloured initials as the fallback.
 const norm = n => (n ?? '').trim().toLowerCase();
-export const rosterOf = name => ROSTER.find(r => norm(r.name) === norm(name));
+export const rosterOf = (name, gang = GANGS[0].id) => ROSTER.find(r =>
+  (r.gang ?? GANGS[0].id) === gang && norm(r.name) === norm(name));
 
 export function avatar(p, cls = '') {
-  const src = rosterOf(p?.name)?.photo;
+  const src = rosterOf(p?.name, p?.gang)?.photo;
   if (src) return `<img class="av ${cls}" src="${esc(src)}" alt="">`;
   const name = (p?.name ?? '').trim() || '?';
   const ini = name.split(/\s+/).map(w => [...w][0]).join('').slice(0, 2).toUpperCase();

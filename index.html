@@ -213,14 +213,15 @@ app.addEventListener('submit', async e => {
   e.preventDefault();
   const f = new FormData(e.target);
   const name = f.get('name').trim().replace(/\s+/g, ' '), pin = f.get('pin');
+  const gang = f.get('gang') || GANGS[0].id;
   if (!name || !/^\d{4}$/.test(pin)) return toast('Enter a name and a 4-digit PIN.');
-  const existing = players.find(p => p.name.toLowerCase() === name.toLowerCase());
+  const existing = players.find(p => (p.gang ?? GANGS[0].id) === gang && p.name.toLowerCase() === name.toLowerCase());
   try {
     if (existing) {
       if (existing.pin !== pin) return toast('Wrong PIN. Use the PIN you joined with.');
       me = existing.id;
     } else {
-      me = await db.addPlayer(newPlayer(name, pin, f.get('gang') || GANGS[0].id, now()));
+      me = await db.addPlayer(newPlayer(name, pin, gang, now()));
     }
     localStorage.setItem(PID, me);
     render();
@@ -234,7 +235,7 @@ app.addEventListener('click', e => {
   if (t.dataset.logout !== undefined) { localStorage.removeItem(PID); me = null; viewKey = ''; render(); }
   if (t.dataset.got) openGot(t.dataset.got);
   if (t.dataset.fail) openFail(t.dataset.fail);
-  if (t.dataset.me) openPin(t.dataset.me);
+  if (t.dataset.me) openPin(t.dataset.me, t.closest('[data-gang]').dataset.gang);
 });
 
 const pinDlg = document.getElementById('pin');
@@ -248,10 +249,11 @@ function clearPinError() {
 
 pinInput.addEventListener('input', clearPinError);
 
-function openPin(name) {
-  const r = rosterOf(name);
+function openPin(name, gang) {
+  const r = rosterOf(name, gang);
   if (!r) return;
   pinDlg.dataset.name = r.name;
+  pinDlg.dataset.gang = gang;
   document.getElementById('pin-av').innerHTML = avatar(r, 'av-lg');
   document.getElementById('pin-h').textContent = `Hi ${r.name}!`;
   pinInput.value = '';
@@ -262,7 +264,8 @@ function openPin(name) {
 pinDlg.querySelector('form').addEventListener('submit', async e => {
   if (e.submitter?.value !== 'ok') return;
   e.preventDefault();
-  const r = rosterOf(pinDlg.dataset.name), pin = pinInput.value.trim();
+  const gang = pinDlg.dataset.gang;
+  const r = rosterOf(pinDlg.dataset.name, gang), pin = pinInput.value.trim();
   if (!r) return;
   if (pin !== String(r.pin)) {
     pinError.textContent = 'Wrong PIN. Check the PIN you were sent.';
@@ -273,8 +276,8 @@ pinDlg.querySelector('form').addEventListener('submit', async e => {
   }
   if (!loaded) return toast('Still loading. Try again in a second.');
   try {
-    const existing = players.find(p => p.name.toLowerCase() === r.name.toLowerCase());
-    me = existing ? existing.id : await db.addPlayer(newPlayer(r.name, String(r.pin), r.gang ?? GANGS[0].id, now()));
+    const existing = players.find(p => (p.gang ?? GANGS[0].id) === gang && p.name.toLowerCase() === r.name.toLowerCase());
+    me = existing ? existing.id : await db.addPlayer(newPlayer(r.name, pin, gang, now()));
     localStorage.setItem(PID, me);
     pinDlg.close();
     render();

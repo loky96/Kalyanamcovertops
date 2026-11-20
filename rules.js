@@ -16,7 +16,7 @@ export const TIMES = [
 // waves: which time of day (TIMES id) the mission can be dealt in ('any' = all day).
 // gangs: optional — only players of these gangs get it. Omit for everyone.
 // Ids must stay stable once the game starts (they are saved on players).
-const IDC = ['idc'], COUSINS = ['cousins'];
+const IDC = ['idc'], COUSINS = ['cousins'], WOW = ['wow'];
 export const MISSIONS = [
   // IDC / design-school missions
   { id: 'kerning',       waves: ['any'], gangs: IDC, text: 'Get someone to say the word "kerning".' },
@@ -57,6 +57,29 @@ export const MISSIONS = [
   { id: 'grandma-dish',  waves: ['any'], gangs: COUSINS, text: 'Get someone to name a dish nobody makes like their grandmother.' },
   { id: 'baby-photo',    waves: ['any'], gangs: COUSINS, text: 'Get someone to show you a childhood photo of the bride or groom.' },
   { id: 'kolam',         waves: ['any'], gangs: COUSINS, text: 'Get someone to draw a kolam or rangoli pattern on a napkin, paper or in the air.' },
+
+  // WOW Friends
+  { id: 'wow-class',       waves: ['any'], gangs: WOW, text: 'Get someone to guess which WoW class the groom would play.' },
+  { id: 'wow-hearthstone', waves: ['any'], gangs: WOW, text: 'Get someone to pick a spot at the venue to set their hearthstone.' },
+  { id: 'wow-quest',       waves: ['any'], gangs: WOW, text: 'Get someone to give you a side quest you can finish at the wedding.' },
+  { id: 'wow-mount',       waves: ['any'], gangs: WOW, text: 'Get someone to choose a WoW mount for the groom\'s big entrance.' },
+  { id: 'wow-murloc',      waves: ['any'], gangs: WOW, text: 'Get someone to do their best murloc impression.' },
+  { id: 'wow-achievement', waves: ['any'], gangs: WOW, text: 'Get someone to invent a WoW achievement for the newlyweds.' },
+  { id: 'wow-guild',       waves: ['any'], gangs: WOW, text: 'Get someone to pitch a guild name for your wedding crew.' },
+  { id: 'wow-gear',        waves: ['any'], gangs: WOW, text: 'Get someone to give their wedding outfit an item level.' },
+  { id: 'wow-raid-lead',   waves: ['any'], gangs: WOW, text: 'Get someone to nominate a friend as raid leader for the wedding.' },
+  { id: 'wow-expansion',   waves: ['any'], gangs: WOW, text: 'Get someone to tell you which WoW expansion they would replay with this gang.' },
+  { id: 'wow-dungeon',     waves: ['any'], gangs: WOW, text: 'Get someone to name a WoW dungeon they could navigate from memory.' },
+  { id: 'wow-pet',         waves: ['any'], gangs: WOW, text: 'Get someone to pick a WoW pet they would bring as their plus-one.' },
+  { id: 'wow-garland',     waves: ['reception'], gangs: WOW, text: 'Get someone to invent a stat bonus for the couple\'s flower garlands.' },
+  { id: 'wow-transmog',    waves: ['reception'], gangs: WOW, text: 'Get someone to describe a silk saree or veshti as if it were a transmog set.' },
+  { id: 'wow-ready-check', waves: ['reception'], gangs: WOW, text: 'Get someone to call a ready check before a group photo.' },
+  { id: 'wow-wipe',        waves: ['night'], gangs: WOW, text: 'Get someone to retell the funniest raid wipe they remember.' },
+  { id: 'wow-inn',         waves: ['night'], gangs: WOW, text: 'Get someone to name a WoW inn where they would take this gang after the reception.' },
+  { id: 'wow-dance',       waves: ['night'], gangs: WOW, text: 'Get someone to do a WoW dance emote for you between songs.' },
+  { id: 'wow-coffee-buff', waves: ['muhurtham'], gangs: WOW, text: 'Get someone to name the buff they would give their morning filter coffee.' },
+  { id: 'wow-kolam',       waves: ['muhurtham'], gangs: WOW, text: 'Get someone to sketch a kolam inspired by a WoW class symbol.' },
+  { id: 'wow-nadaswaram',  waves: ['muhurtham'], gangs: WOW, text: 'Get someone to pick a WoW zone whose soundtrack would sound good on a nadaswaram.' },
 
   // Wedding missions — any wave
   { id: 'teach-word',    waves: ['any'], text: 'Get someone to teach you a word in Telugu or Tamil.' },

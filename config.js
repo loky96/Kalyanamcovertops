@@ -12,10 +12,11 @@ export const TITLE = 'Kalyanam Covert Ops';
 export const GANGS = [
   { id: 'idc', name: 'Lokesh Friends' },
   { id: 'cousins', name: 'Cousins' },
+  { id: 'wow', name: 'WOW Friends' },
 ];
 
 // Everyone who can play. Players join by tapping their photo and entering their PIN.
-//   name:  shown in the game (keep it unique)
+//   name:  shown in the game (keep it unique within each gang)
 //   gang:  a gang id from GANGS
 //   pin:   4 digits as a string; send it to that person privately
 //   photo: optional square-ish JPG (~300px) in photos/; without it they get coloured initials
@@ -55,6 +56,12 @@ export const ROSTER = [
   { name: 'Varshita',  gang: 'cousins', pin: '7954' },
   { name: 'Tej Kiren', gang: 'cousins', pin: '6185' },
   { name: 'Logitha',   gang: 'cousins', pin: '4530' },
+  // Gang 3: WOW Friends
+  { name: 'Mithelesh', gang: 'wow', pin: '9044' },
+  { name: 'Bharath',   gang: 'wow', pin: '7311' },
+  { name: 'Ravi',      gang: 'wow', pin: '0758' },
+  { name: 'Suriya',    gang: 'wow', pin: '9369' },
+  { name: 'Addy',      gang: 'wow', pin: '6302' },
 ];
 
 // Change to start a fresh game (e.g. 'wedding' after testing). Old data stays under the old id.
