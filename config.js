@@ -62,6 +62,7 @@ export const ROSTER = [
   { name: 'Ravi',      gang: 'wow', pin: '0758' },
   { name: 'Suriya',    gang: 'wow', pin: '9369' },
   { name: 'Addy',      gang: 'wow', pin: '6302' },
+  { name: 'Vicky',     gang: 'wow', pin: '8036' },
 ];
 
 // Change to start a fresh game (e.g. 'wedding' after testing). Old data stays under the old id.
