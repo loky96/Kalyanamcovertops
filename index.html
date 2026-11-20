@@ -28,7 +28,8 @@
   <form method="dialog">
     <div id="pin-av"></div>
     <h3 id="pin-h"></h3>
-    <label>Your PIN<input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off" placeholder="••••"></label>
+    <label>Your PIN<input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off" placeholder="••••" aria-describedby="pin-error"></label>
+    <p id="pin-error" class="pin-error" role="alert"></p>
     <div class="row">
       <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
       <button class="btn primary" value="ok">Join</button>
@@ -216,7 +217,7 @@ app.addEventListener('submit', async e => {
   const existing = players.find(p => p.name.toLowerCase() === name.toLowerCase());
   try {
     if (existing) {
-      if (existing.pin !== pin) return toast('That name is taken, or the PIN is wrong.');
+      if (existing.pin !== pin) return toast('Wrong PIN. Use the PIN you joined with.');
       me = existing.id;
     } else {
       me = await db.addPlayer(newPlayer(name, pin, f.get('gang') || GANGS[0].id, now()));
@@ -237,22 +238,39 @@ app.addEventListener('click', e => {
 });
 
 const pinDlg = document.getElementById('pin');
+const pinInput = pinDlg.querySelector('input');
+const pinError = document.getElementById('pin-error');
+
+function clearPinError() {
+  pinError.textContent = '';
+  pinInput.removeAttribute('aria-invalid');
+}
+
+pinInput.addEventListener('input', clearPinError);
+
 function openPin(name) {
   const r = rosterOf(name);
   if (!r) return;
   pinDlg.dataset.name = r.name;
   document.getElementById('pin-av').innerHTML = avatar(r, 'av-lg');
   document.getElementById('pin-h').textContent = `Hi ${r.name}!`;
-  pinDlg.querySelector('input').value = '';
+  pinInput.value = '';
+  clearPinError();
   pinDlg.showModal();
 }
 
 pinDlg.querySelector('form').addEventListener('submit', async e => {
   if (e.submitter?.value !== 'ok') return;
   e.preventDefault();
-  const r = rosterOf(pinDlg.dataset.name), pin = pinDlg.querySelector('input').value.trim();
+  const r = rosterOf(pinDlg.dataset.name), pin = pinInput.value.trim();
   if (!r) return;
-  if (pin !== String(r.pin)) return toast('Wrong PIN. Check the PIN you were sent.');
+  if (pin !== String(r.pin)) {
+    pinError.textContent = 'Wrong PIN. Check the PIN you were sent.';
+    pinInput.setAttribute('aria-invalid', 'true');
+    pinInput.focus();
+    pinInput.select();
+    return;
+  }
   if (!loaded) return toast('Still loading. Try again in a second.');
   try {
     const existing = players.find(p => p.name.toLowerCase() === r.name.toLowerCase());

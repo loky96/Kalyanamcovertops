@@ -168,6 +168,8 @@ input:focus, select:focus { outline: none; border-color: var(--sambar); }
 .gang-sel { margin: 16px 0 0; }
 .pick[hidden] { display: none; }
 #pin-av { margin-bottom: 10px; }
+.pin-error { margin: 0 0 12px; color: var(--payasam); font-weight: 700; }
+.pin-error:empty { margin: 0; }
 
 /* Feed */
 .section-h { font-size: 24px; margin: 26px 0 8px; }
