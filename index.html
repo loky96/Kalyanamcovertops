@@ -89,30 +89,40 @@ function stripHTML(ph) {
     over: ['Game over', '', 'Final scores are in. Check the leaderboard.', false],
   }[ph.state];
   return `<section class="strip ${ph.state}" aria-live="polite">
-    <div class="strip-top"><h2>${title}</h2><span class="pts-each">${side}</span></div>
+    <div class="strip-top"><h2>${title}</h2>${side ? `<span class="pts-each">${side}</span>` : ''}</div>
     <p>${line}</p>${bar ? '<div class="bar" aria-hidden="true"><i id="bar"></i></div>' : ''}</section>`;
 }
 
+function beforeHTML(ph, header, action) {
+  return `<div class="before-game">
+    <div class="before-heading">${header}</div>
+    ${stripHTML(ph)}
+    <div class="before-action">${action}</div>
+  </div>`;
+}
 
 function joinHTML(ph) {
   const gangPick = GANGS.length > 1
     ? `<label>Your gang<select name="gang" required>${GANGS.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : '';
   const title = esc(TITLE).replace(/^(\S+)\s+(.+)$/, '$1 <span>$2</span>');
-  return `${demoBanner()}
-    <header class="hero">
+  const hero = `<header class="hero">
       <h1>${title}</h1>
       <p class="script" lang="ta" aria-hidden="true">கல்யாணம் · <span lang="te">కళ్యాణం</span></p>
       <p class="lede">Secret missions for the ${GANGS.map(g => esc(g.name).replace(/ /g, '&nbsp;')).join(' &amp; ')}, from the reception to the muhurtham.</p>
-    </header>
-    ${stripHTML(ph)}
-    ${ROSTER.length ? whoHTML() : `<form id="join" class="panel">
+    </header>`;
+  const join = ROSTER.length ? whoHTML() : `<form id="join" class="panel">
       <label>Your name<input name="name" maxlength="24" required autocomplete="nickname" placeholder="What the gang calls you"></label>
       <label>4-digit PIN <small>to log back in on any phone</small>
         <input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off" placeholder="••••"></label>
       ${gangPick}
       <button class="btn primary block" ${loaded ? '' : 'disabled'}>Join the game</button>
       <p class="small dim" style="margin-top:12px">Already playing? Use the same name and PIN.</p>
-    </form>`}`;
+    </form>`;
+  if (ph.state === 'before') {
+    const action = '<a class="btn primary" href="#join-game">Join the game</a>';
+    return `${beforeHTML(ph, demoBanner() + hero, action)}<div id="join-game" tabindex="-1">${join}</div>`;
+  }
+  return `${demoBanner()}${hero}${stripHTML(ph)}${join}`;
 }
 
 // Join by picking your gang, tapping your own photo (from config ROSTER), then the PIN you were sent.
@@ -150,9 +160,16 @@ function slotted(p) {
 function mainHTML(p, ph) {
   const list = ranked(players.filter(x => x.gang === p.gang));
   const rank = list.findIndex(x => x.id === me) + 1;
+  const header = `<header class="me">
+    <div class="me-id">${avatar(p, 'av-md')}
+      <div><h1>${esc(p.name)}</h1><p class="rank">#${rank} of ${list.length}</p></div></div>
+    <div class="score"><b>${p.score}</b><span>points</span></div>
+  </header>`;
+  const logout = `<p class="foot">Not ${esc(p.name)}? <button class="linkbtn" data-logout>Log out</button></p>`;
+  if (ph.state === 'before') return beforeHTML(ph, demoBanner() + header, logout);
+
   const live = ph.state === 'live' && p.active.length > 0;
   const empty = {
-    before: ['Get ready', 'Your missions unlock when Round 1 starts.'],
     over: ['Game over', 'Check the leaderboard to see who won.'],
     live: ['Dealing missions…', 'Your missions are on the way.'],
   }[ph.state];
@@ -164,15 +181,7 @@ function mainHTML(p, ph) {
           <button class="btn" data-got="${esc(id)}">${icon('fold')}Got 'em</button>
           <button class="btn fail" data-fail="${esc(id)}">Failed it</button></div>`}</li>`).join('')}</ol>`
     : `<div class="empty-leaf"><h2>${empty[0]}</h2><p class="dim">${empty[1]}</p></div>`;
-  return `${demoBanner()}
-    ${stripHTML(ph)}
-    <header class="me">
-      <div class="me-id">${avatar(p, 'av-md')}
-        <div><h1>${esc(p.name)}</h1><p class="rank">#${rank} of ${list.length}</p></div></div>
-      <div class="score"><b>${p.score}</b><span>points</span></div>
-    </header>
-    ${body}
-    <p class="foot">Not ${esc(p.name)}? <button class="linkbtn" data-logout>Log out</button></p>`;
+  return `${demoBanner()}${stripHTML(ph)}${header}${body}${logout}`;
 }
 
 function render() {

@@ -65,6 +65,18 @@ b, .num { font-variant-numeric: tabular-nums; }
 .bar { height: 10px; margin-top: 10px; border-radius: 999px; background: rgb(255 255 255 / .1); overflow: hidden; }
 .bar i { display: block; height: 100%; border-radius: inherit; background: var(--sambar); transform: scaleX(0); transform-origin: left; transition: transform 1s linear; }
 
+/* Center the pre-game countdown above the fixed tabs. */
+.before-game {
+  display: grid; grid-template-rows: 1fr auto 1fr; gap: 14px;
+  min-height: calc(100svh - 104px - env(safe-area-inset-bottom));
+}
+.before-heading { align-self: end; }
+.before-game .hero { padding: 12px 0 0; }
+.before-game .strip { margin: 0; padding: 20px 16px; text-align: center; }
+.before-game .strip-top { justify-content: center; }
+.before-game .strip h2 { font-size: clamp(24px, 7vw, 32px); }
+.before-action { text-align: center; }
+
 /* Join */
 .hero { padding: 26px 0 18px; text-align: center; }
 .hero h1 { font-size: clamp(46px, 14vw, 64px); }
