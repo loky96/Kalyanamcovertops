@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#163d0e">
+<title>Leaderboard · Kalyanam Covert Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="wrap">
+  <div id="demo"></div>
+  <h1 class="page-h">Leaderboard</h1>
+  <p class="gang-of" id="gang-of" hidden></p>
+  <label id="gang-pick" hidden>Gang<select id="board-gang"></select></label>
+  <section class="strip" id="strip" aria-live="polite"></section>
+  <ol class="ranks" id="ranks"></ol>
+  <h2 class="section-h">Latest moves</h2>
+  <ul class="feed" id="feed"></ul>
+</main>
+<div id="tabs"></div>
+<script type="module">
+import { db, now, esc, dur, when, ranked, eventHTML, demoBanner, tabs, avatar } from './game.js';
+import { phase, GAME } from './rules.js';
+import { GANGS, GAME_ID } from './config.js';
+
+const $ = id => document.getElementById(id);
+const me = localStorage.getItem('pid:' + GAME_ID);
+const T = s => Date.parse(s);
+$('demo').innerHTML = demoBanner();
+$('tabs').innerHTML = tabs('board');
+
+// Gangs play separately and are never ranked together. A player sees only their own gang;
+// a phone that hasn't joined picks one gang at a time.
+let players = [], events = [], loaded = false, pick = GANGS[0].id;
+const gangOf = id => players.find(p => p.id === id)?.gang;
+$('board-gang').innerHTML = GANGS.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('');
+$('board-gang').addEventListener('change', e => { pick = e.target.value; render(); });
+db.onPlayers(ps => { players = ps; loaded = true; render(); });
+db.onEvents(es => { events = es; render(); }, 60);
+
+function render() {
+  if (!loaded) return;
+  const mine = gangOf(me), gang = mine ?? pick;
+  $('gang-of').hidden = !mine || GANGS.length < 2;
+  $('gang-of').textContent = GANGS.find(g => g.id === gang)?.name ?? '';
+  $('gang-pick').hidden = !!mine || GANGS.length < 2;
+  const ps = players.filter(p => p.gang === gang);
+  $('ranks').innerHTML = ranked(ps).map(p => `<li class="${p.id === me ? 'you' : ''}">${avatar(p)}
+      <span class="who">${esc(p.name)}${p.id === me ? '<span class="you-tag">you</span>' : ''}</span><span class="s">${p.score}</span></li>`).join('')
+    || '<li class="dim">No players yet.</li>';
+  const es = events.filter(e => gangOf(e.by) === gang).slice(0, 15);
+  $('feed').innerHTML = es.map(eventHTML).join('') || '<li class="dim">No moves yet.</li>';
+}
+
+const S = Date.parse(GAME.start), E = Date.parse(GAME.end);
+function tick() {
+  const ph = phase(now());
+  const left = ph.until ? dur(ph.until - now()) : '';
+  const bar = `<div class="bar" aria-hidden="true"><i style="transform:scaleX(${Math.min(1, (now() - S) / (E - S))})"></i></div>`;
+  $('strip').className = 'strip ' + ph.state;
+  $('strip').innerHTML = {
+    before: `<div class="strip-top"><h2>Game starts soon</h2></div><p>Starts ${when(S)} · in ${left}</p>`,
+    live: `<div class="strip-top"><h2>Game on</h2><span class="pts-each">+${GAME.points} per catch</span></div><p>Ends ${when(E)} · ${left} left</p>${bar}`,
+    over: `<div class="strip-top"><h2>Game over</h2></div><p>Final standings</p>`,
+  }[ph.state];
+}
+tick();
+setInterval(tick, 10000);
+</script>
+</body>
+</html>

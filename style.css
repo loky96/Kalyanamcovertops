@@ -1,0 +1,306 @@
+/* Ilai Sappadu: the phone is a banana leaf, missions are dishes served on it. */
+:root {
+  --leaf: #2a6618;          /* drenched ground: banana yellow-green */
+  --leaf-deep: #163d0e;     /* panels, strip, sheets */
+  --leaf-mid: #3b8226;      /* raised leaf */
+  --midrib: #c6df8a;
+  --rice: #fff8e7;          /* main text on leaf */
+  --rice-dim: #d9ebbf;      /* secondary text, tinted from the leaf */
+  --ink: #10300a;           /* text on light dishes */
+  --sambar: #f4a51c;        /* primary action */
+  --beetroot: #b0215d;
+  --rasam: #c9311b;         /* the gotcha reveal */
+  --payasam: #f7dc9b;
+  --font: 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', system-ui, sans-serif;
+  --dollop: 60px 96px 52px 104px / 72px 50px 92px 58px;
+  --dollop-2: 98px 56px 104px 50px / 54px 80px 60px 88px;
+  --dollop-3: 70px 104px 48px 90px / 90px 58px 76px 50px;
+  --lift: 0 14px 22px -12px rgb(8 22 3 / .7), 0 2px 4px rgb(8 22 3 / .25);
+  color-scheme: dark;
+  accent-color: var(--sambar);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--leaf-mid) var(--leaf-deep); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--rice);
+  font: 500 17px/1.45 var(--font);
+  caret-color: var(--sambar);
+  background-color: var(--leaf);
+  background-image:
+    radial-gradient(120% 60% at 85% -10%, rgb(198 223 138 / .07), transparent 60%),   /* gloss */
+    repeating-linear-gradient(172deg, transparent 0 13px, rgb(255 255 255 / .045) 13px 14px); /* veins */
+  -webkit-tap-highlight-color: transparent;
+}
+/* The served piece is cut along the midrib: the rib runs down the left edge. */
+body::before {
+  content: ''; position: fixed; inset: 0 auto 0 0; width: 9px; z-index: 0; pointer-events: none;
+  background: linear-gradient(90deg, #9dc463, var(--midrib) 45%, #8fb857 80%, #5d8f3c);
+  box-shadow: 2px 0 6px rgb(8 22 3 / .35);
+}
+::selection { background: var(--sambar); color: var(--ink); }
+
+h1, h2, h3 { font-weight: 800; line-height: 1.02; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--rice); text-decoration-color: var(--sambar); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+q { quotes: '“' '”'; }
+b, .num { font-variant-numeric: tabular-nums; }
+.ic { width: 1.25em; height: 1.25em; flex: none; }
+
+.wrap { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 12px 16px 116px 24px; }
+.dim { color: var(--rice-dim); }
+.small { font-size: 14px; }
+
+/* Demo note */
+.demo { display: inline-block; margin-bottom: 10px; padding: 4px 12px; border-radius: 999px; background: var(--leaf-deep); color: var(--rice-dim); font-size: 13px; font-weight: 600; }
+
+/* Serving strip: names the span you are in, time as an exact-length bar */
+.strip { background: var(--leaf-deep); border-radius: 22px; padding: 12px 18px 14px; margin: 0 0 14px; box-shadow: var(--lift); }
+.strip-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.strip h2 { font-size: 21px; }
+.strip .pts-each { font-weight: 800; color: var(--sambar); white-space: nowrap; }
+.strip p { color: var(--rice-dim); font-size: 15px; margin-top: 2px; }
+.bar { height: 10px; margin-top: 10px; border-radius: 999px; background: rgb(255 255 255 / .1); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: inherit; background: var(--sambar); transform: scaleX(0); transform-origin: left; transition: transform 1s linear; }
+
+/* Join */
+.hero { padding: 26px 0 18px; text-align: center; }
+.hero h1 { font-size: clamp(46px, 14vw, 64px); }
+.hero h1 span { display: block; color: var(--sambar); }
+.hero .script { margin-top: 10px; font-size: 22px; font-weight: 700; color: var(--midrib); }
+.hero .lede { margin-top: 12px; margin-inline: auto; max-width: 30ch; text-wrap: balance; color: var(--rice-dim); font-size: 18px; }
+
+.panel { background: var(--leaf-deep); border-radius: 28px; padding: 22px 20px; margin: 18px 0; box-shadow: var(--lift); }
+label { display: block; font-weight: 700; font-size: 17px; margin-bottom: 16px; }
+label small { font-weight: 500; color: var(--rice-dim); }
+input, select {
+  display: block; width: 100%; margin-top: 6px; padding: 12px 16px; min-height: 54px;
+  font: 700 20px var(--font); color: var(--ink); background: var(--rice);
+  border: 3px solid transparent; border-radius: 18px;
+}
+select { font-size: 17px; }
+input::placeholder { color: #5b6f5f; }
+:focus-visible { outline: 3px solid var(--sambar); outline-offset: 3px; }
+input:focus, select:focus { outline: none; border-color: var(--sambar); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 54px; padding: 0 24px; border-radius: 999px; border: 0;
+  font: 800 19px/1 var(--font); cursor: pointer; text-decoration: none;
+  background: var(--rice); color: var(--ink);
+  box-shadow: 0 6px 12px -6px rgb(8 22 3 / .6);
+  transition: transform .12s ease-out, box-shadow .12s ease-out;
+}
+.btn:active { transform: translateY(2px) scale(.98); box-shadow: 0 2px 4px -2px rgb(8 22 3 / .6); }
+.btn.primary { background: var(--sambar); color: var(--ink); }
+.btn.ghost { background: transparent; color: var(--rice); box-shadow: inset 0 0 0 3px var(--rice-dim); }
+.btn.block { width: 100%; }
+.btn:disabled { opacity: .45; cursor: default; }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--rice); text-decoration: underline 2px var(--sambar); text-underline-offset: 3px; cursor: pointer; }
+
+/* Player header */
+.me { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px; }
+.me h1 { font-size: 30px; overflow-wrap: anywhere; }
+.me .rank { color: var(--rice-dim); font-weight: 700; font-size: 15px; margin-top: 4px; }
+.score { text-align: right; line-height: .9; }
+.score b { display: block; font-size: 56px; font-weight: 800; color: var(--sambar); }
+.score span { font-size: 14px; font-weight: 700; color: var(--rice-dim); }
+
+/* Dishes: the three missions, each served in its own spot */
+.dishes { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 12px; }
+.dish {
+  width: 96%; justify-self: start; rotate: -1deg;
+  padding: 16px 26px 16px; border-radius: var(--dollop); box-shadow: var(--lift);
+  background: var(--sambar); color: var(--ink);
+  transform-origin: 50% 100%;
+}
+.dish[data-slot="1"], .dish[data-slot="4"], .dish[data-slot="7"] { width: 92%; justify-self: end; rotate: .8deg; background: var(--payasam); border-radius: var(--dollop-2); }
+.dish[data-slot="2"], .dish[data-slot="5"] { width: 92%; justify-self: start; rotate: -.5deg; margin-left: 10px; background: var(--beetroot); color: var(--rice); border-radius: var(--dollop-3); }
+.dish p { font-size: 20px; font-weight: 700; line-height: 1.18; margin-bottom: 10px; text-wrap: pretty; }
+.dish .btn { min-height: 48px; background: var(--ink); color: var(--rice); }
+.dish[data-slot="2"] .btn, .dish[data-slot="5"] .btn { background: var(--rice); color: var(--beetroot); }
+.dish-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.dish-btns .btn { padding: 0 16px; gap: 8px; font-size: 17px; }
+.dish .btn.fail { min-height: 48px; padding: 0 14px; font-size: 15px; background: transparent; color: inherit; box-shadow: inset 0 0 0 2px currentColor; }
+.dish.failed { background: var(--rasam) !important; color: var(--rice) !important; }
+.dish.failed p { opacity: .75; text-decoration: line-through; text-decoration-thickness: 2px; }
+.stamp {
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 3px solid var(--rice); border-radius: 12px;
+  font-weight: 800; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; rotate: -4deg;
+}
+.stamp .ic { width: 20px; height: 20px; }
+.dish.folding { animation: fold .42s cubic-bezier(.55, 0, .9, .4) forwards; pointer-events: none; }
+.dish.served { animation: serve .5s cubic-bezier(.16, 1, .3, 1); }
+@keyframes fold { to { transform: perspective(700px) rotateX(-92deg) scaleY(.6); opacity: .2; } }
+@keyframes serve { from { transform: translateY(18px) scale(.82) rotate(-3deg); } }
+
+.empty-leaf { text-align: center; padding: 30px 12px; }
+.empty-leaf h2 { font-size: 30px; margin-bottom: 6px; }
+
+/* Avatars: selfie or coloured initials */
+.av {
+  display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; font-weight: 800; font-size: 17px; line-height: 1; color: var(--ink); background: var(--sambar);
+  box-shadow: 0 0 0 3px var(--leaf-deep);
+}
+.av-c1 { background: var(--payasam); }
+.av-c2 { background: var(--beetroot); color: var(--rice); }
+.av-c3 { background: var(--rice); }
+.av-c4 { background: var(--midrib); }
+.av-md { width: 56px; height: 56px; font-size: 21px; }
+.av-lg { width: 72px; height: 72px; font-size: 26px; }
+.av-xl { width: 132px; height: 132px; font-size: 48px; box-shadow: 0 0 0 5px var(--rice), var(--lift); }
+.me-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+
+/* Who did you get: tap a face */
+.pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 6px; margin: 0 0 14px; max-height: 52vh; overflow-y: auto; padding: 6px 2px; }
+.pick-who {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 48px; padding: 8px 2px;
+  background: none; border: 0; border-radius: 20px; color: var(--rice); font: 700 15px/1.15 var(--font);
+  text-align: center; overflow-wrap: anywhere; cursor: pointer;
+}
+.pick-who:active, .pick-who:hover { background: var(--leaf-mid); }
+.panel .pick { max-height: none; margin: 14px 0 0; }
+.who-h { font-size: 24px; margin-bottom: 4px; }
+.gang-sel { margin: 16px 0 0; }
+.pick[hidden] { display: none; }
+#pin-av { margin-bottom: 10px; }
+
+/* Feed */
+.section-h { font-size: 24px; margin: 26px 0 8px; }
+.feed { list-style: none; margin: 0; padding: 0; }
+.ev { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 2px dotted rgb(255 255 255 / .16); }
+.ev-mark { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--sambar); color: var(--ink); }
+.ev-text { flex: 1; min-width: 0; }
+.ev-failed .ev-mark { background: transparent; color: var(--rice); box-shadow: inset 0 0 0 2px var(--rice-dim); }
+.ev .pts.fail-tag { font-size: 14px; color: var(--rice-dim); }
+.ev .pts { flex: none; font-weight: 800; font-size: 19px; color: var(--sambar); font-variant-numeric: tabular-nums; }
+
+/* Rules */
+/* How to play: illustrated steps, golden rule, rounds timeline */
+.steps { list-style: none; margin: 4px 0 6px; padding: 0; counter-reset: step; }
+.step { position: relative; display: grid; grid-template-columns: 52px 1fr; gap: 14px; padding-bottom: 18px; counter-increment: step; }
+.step:not(:last-child)::before {
+  content: ''; position: absolute; left: 25px; top: 56px; bottom: 4px; border-left: 2px dotted rgb(255 255 255 / .28);
+}
+.step-ic { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--sambar); color: var(--ink); box-shadow: var(--lift); }
+.step-ic .ic { width: 26px; height: 26px; }
+.step-ic::after {
+  content: counter(step); position: absolute; top: -4px; right: -6px; display: grid; place-items: center;
+  width: 22px; height: 22px; border-radius: 50%; background: var(--leaf-deep); color: var(--rice);
+  font-size: 13px; font-weight: 800; box-shadow: 0 0 0 2px var(--rice-dim);
+}
+.step:nth-child(2) .step-ic { background: var(--payasam); }
+.step:nth-child(3) .step-ic { background: var(--beetroot); color: var(--rice); }
+.step:nth-child(4) .step-ic { background: var(--rice); }
+.step.has-fork .step-ic { background: var(--rice); }
+.step.has-fork:nth-child(5) .step-ic { background: var(--sambar); }
+.step h4 { margin: 3px 0 2px; font-size: 19px; font-weight: 800; line-height: 1.15; }
+.step p { color: var(--rice-dim); font-size: 15px; line-height: 1.35; }
+.step p b { color: var(--rice); }
+/* Step 4 forks into two outcomes */
+.step.has-fork { align-items: center; row-gap: 14px; padding-bottom: 6px; }
+.step.has-fork h4 { margin: 0; font-size: 18px; }
+.step.has-fork::before { content: ''; position: absolute; left: 25px; top: 52px; height: 28px; border-left: 2px dotted rgb(255 255 255 / .28); }
+.fork { position: relative; grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 26px; margin-bottom: 18px; }
+.fork::before { content: ''; position: absolute; top: 12px; left: 25px; right: calc(25% - 2.5px); border-top: 2px dotted rgb(255 255 255 / .28); }
+.branch {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 14px 10px 16px; border-radius: 18px; text-align: center; font-size: 14px; line-height: 1.3;
+}
+.branch::before { content: ''; position: absolute; top: -16px; left: 50%; height: 14px; border-left: 2px dotted rgb(255 255 255 / .28); }
+.branch > b { font-size: 17px; font-weight: 800; }
+.branch p { color: var(--rice-dim); }
+.branch p b { color: var(--rice); }
+.b-ic { display: grid; place-items: center; width: 40px; height: 40px; margin-bottom: 4px; border-radius: 50%; }
+.b-ic .ic { width: 22px; height: 22px; }
+.branch.yes { background: rgb(244 165 28 / .14); border: 2px solid var(--sambar); }
+.branch.yes .b-ic { background: var(--sambar); color: var(--ink); }
+.branch.no { background: rgb(255 255 255 / .04); border: 2px dashed rgb(217 235 191 / .45); }
+.branch.no .b-ic { color: var(--rice); box-shadow: inset 0 0 0 2px var(--rice-dim); }
+.game-time { display: flex; align-items: center; gap: 12px; margin: 0; padding: 12px 14px; border-radius: 18px; background: rgb(255 255 255 / .07); font-size: 15px; line-height: 1.35; }
+.game-time .ic { width: 28px; height: 28px; color: var(--sambar); }
+.foot { margin-top: 18px; text-align: center; font-size: 15px; color: var(--rice-dim); }
+
+/* Bottom tabs: Missions | Leaderboard | How to play */
+.tabs {
+  position: fixed; z-index: 5; left: 0; right: 0; bottom: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 6px;
+  max-width: 480px; margin: 0 auto;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
+  background: var(--leaf-deep); box-shadow: 0 -8px 20px -10px rgb(8 22 3 / .7);
+  border-radius: 26px 26px 0 0;
+}
+.tabs a {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 0; border-radius: 16px; color: var(--rice-dim); text-decoration: none; font-weight: 700; font-size: 14px;
+}
+.tabs a .ic { width: 26px; height: 26px; }
+.tabs a[aria-current] { color: var(--ink); background: var(--sambar); }
+
+/* Bottom sheets */
+dialog {
+  width: min(100% - 16px, 480px); max-height: 92vh; margin: auto auto 8px; border: 0; border-radius: 30px;
+  padding: 24px 20px 20px; background: var(--leaf-deep); color: var(--rice);
+  box-shadow: 0 -10px 40px rgb(8 22 3 / .6);
+}
+dialog[open] { animation: sheet .32s cubic-bezier(.16, 1, .3, 1); }
+@keyframes sheet { from { transform: translateY(40px); } }
+dialog::backdrop { background: rgb(8 22 3 / .6); }
+dialog h3 { font-size: 28px; margin-bottom: 8px; }
+dialog .q { font-size: 19px; font-weight: 700; color: var(--payasam); margin-bottom: 16px; }
+dialog .note { font-size: 15px; color: var(--rice-dim); margin-bottom: 16px; }
+.row { display: flex; gap: 10px; }
+.row .btn { flex: 1; }
+
+/* The gotcha reveal: full screen, shown to the victim's face */
+dialog.reveal {
+  width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; border-radius: 0;
+  padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+  background: var(--rasam); color: var(--rice); box-shadow: none;
+}
+dialog.reveal[open] { display: flex; animation: gotcha .45s cubic-bezier(.16, 1, .3, 1); }
+@keyframes gotcha { from { transform: scale(1.06); opacity: .4; } }
+.reveal form { display: flex; flex-direction: column; justify-content: center; gap: 16px; width: 100%; max-width: 440px; margin: auto; }
+.reveal h2 { font-size: clamp(46px, 14vw, 68px); line-height: .95; }
+.reveal-sub { font-size: 19px; font-weight: 700; }
+.reveal-mission {
+  margin: 4px 0 8px; padding: 22px 26px; border-radius: var(--dollop-2); rotate: -1deg; box-shadow: var(--lift);
+  background: var(--payasam); color: var(--ink); font-size: 23px; font-weight: 700; line-height: 1.2;
+}
+.reveal .btn.yes { min-height: 64px; font-size: 22px; background: var(--rice); color: var(--ink); }
+.reveal .note { margin: 4px 0 -4px; text-align: center; font-size: 18px; font-weight: 800; color: var(--rice); }
+.reveal .btn.no { min-height: 56px; font-size: 18px; box-shadow: inset 0 0 0 3px var(--rice); }
+
+/* Toast */
+.toast {
+  position: fixed; z-index: 10; left: 50%; bottom: calc(92px + env(safe-area-inset-bottom));
+  transform: translate(-50%, 30px); opacity: 0; max-width: calc(100% - 32px);
+  padding: 12px 20px; border-radius: 999px; background: var(--payasam); color: var(--ink);
+  font-weight: 800; box-shadow: var(--lift); transition: transform .3s cubic-bezier(.16, 1, .3, 1), opacity .2s;
+}
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+/* Leaderboard */
+.page-h { font-size: 44px; margin: 10px 0 14px; }
+.ranks { list-style: none; margin: 0; padding: 0; counter-reset: r; }
+.ranks li { counter-increment: r; display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 2px dotted rgb(255 255 255 / .16); font-size: 21px; font-weight: 700; }
+.ranks li::before {
+  content: counter(r); flex: none; display: grid; place-items: center; width: 32px; height: 32px; font-size: 16px;
+  border-radius: 50%; font-weight: 800; color: var(--rice-dim); box-shadow: inset 0 0 0 2px rgb(255 255 255 / .2);
+}
+.ranks li:nth-child(1)::before { background: var(--sambar); color: var(--ink); box-shadow: none; }
+.ranks li:nth-child(2)::before { background: var(--rice); color: var(--ink); box-shadow: none; }
+.ranks li:nth-child(3)::before { background: var(--beetroot); color: var(--rice); box-shadow: none; }
+.ranks li.you { color: var(--sambar); }
+.ranks .who { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ranks .you-tag { font-size: 13px; font-weight: 800; color: var(--ink); background: var(--sambar); border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
+.ranks .s { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+.gang-of { margin: -8px 0 14px; font-size: 18px; font-weight: 700; color: var(--sambar); }

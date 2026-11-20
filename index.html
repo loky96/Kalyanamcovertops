@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#163d0e">
+<title>Kalyanam Covert Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Baloo+Tammudu+2:wght@700&family=Baloo+Thambi+2:wght@700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app" class="wrap"><p class="dim">Loading the game…</p></main>
+<div id="tabs"></div>
+
+<dialog id="got" aria-labelledby="got-h">
+  <form method="dialog">
+    <h3 id="got-h">Who did you get?</h3>
+    <p class="q" id="got-q"></p>
+    <p class="note">Tap the friend you got, in front of them. They confirm on your phone.</p>
+    <div class="pick" id="got-pick"></div>
+    <button class="btn ghost block" value="cancel" formnovalidate>Cancel</button>
+  </form>
+</dialog>
+
+<dialog id="pin" aria-labelledby="pin-h">
+  <form method="dialog">
+    <div id="pin-av"></div>
+    <h3 id="pin-h"></h3>
+    <label>Your PIN<input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off" placeholder="••••"></label>
+    <div class="row">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn primary" value="ok">Join</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="fail" aria-labelledby="fail-h">
+  <form method="dialog">
+    <h3 id="fail-h">Got called out?</h3>
+    <p class="q" id="fail-q"></p>
+    <p class="note">This mission fails. It turns red and can't be completed for the rest of the game.</p>
+    <div class="row">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+      <button class="btn primary" value="ok">Failed it</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="reveal" class="reveal" aria-labelledby="reveal-h">
+  <form method="dialog">
+    <div id="reveal-av"></div>
+    <h2 id="reveal-h"></h2>
+    <p class="reveal-sub" id="reveal-sub"></p>
+    <p class="reveal-mission" id="reveal-mission"></p>
+    <p class="note" id="reveal-note"></p>
+    <button class="btn block yes" value="ok">Yes, I got caught</button>
+    <button class="btn ghost block no" value="no" formnovalidate>No, I didn't get caught</button>
+  </form>
+</dialog>
+
+<script type="module">
+import { db, now, esc, dur, when, ranked, toast, demoBanner, icon, tabs, avatar, rosterOf } from './game.js';
+import { GAME, HAND, byId, phase, newPlayer, needsHand, refresh, gotEm, failIt } from './rules.js';
+import { TITLE, GANGS, GAME_ID, ROSTER } from './config.js';
+
+const app = document.getElementById('app');
+const gotDlg = document.getElementById('got'), revealDlg = document.getElementById('reveal');
+const PID = 'pid:' + GAME_ID;
+let me = localStorage.getItem(PID), players = [], loaded = false;
+let viewKey = '', busy = false, lastPhase = '', holdRender = false, freshId = null;
+
+const mine = () => players.find(p => p.id === me);
+const others = () => players.filter(p => p.id !== me && p.gang === mine()?.gang).sort((a, b) => a.name.localeCompare(b.name)); // gangs play separately
+const T = s => Date.parse(s);
+
+document.getElementById('tabs').innerHTML = tabs('missions');
+db.onPlayers(ps => { players = ps; loaded = true; render(); ensureHand(); });
+setInterval(() => { tick(); ensureHand(); }, 1000);
+
+const S = Date.parse(GAME.start), E = Date.parse(GAME.end);
+
+function stripHTML(ph) {
+  const [title, side, line, bar] = {
+    before: ['Game starts soon', '', `Starts ${when(S)} · in <b id="cd"></b>`, false],
+    live: ['Game on', `+${GAME.points} per catch`, `Ends ${when(E)} · <b id="cd"></b> left`, true],
+    over: ['Game over', '', 'Final scores are in. Check the leaderboard.', false],
+  }[ph.state];
+  return `<section class="strip ${ph.state}" aria-live="polite">
+    <div class="strip-top"><h2>${title}</h2><span class="pts-each">${side}</span></div>
+    <p>${line}</p>${bar ? '<div class="bar" aria-hidden="true"><i id="bar"></i></div>' : ''}</section>`;
+}
+
+
+function joinHTML(ph) {
+  const gangPick = GANGS.length > 1
+    ? `<label>Your gang<select name="gang" required>${GANGS.map(g => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : '';
+  const title = esc(TITLE).replace(/^(\S+)\s+(.+)$/, '$1 <span>$2</span>');
+  return `${demoBanner()}
+    <header class="hero">
+      <h1>${title}</h1>
+      <p class="script" lang="ta" aria-hidden="true">கல்யாணம் · <span lang="te">కళ్యాణం</span></p>
+      <p class="lede">Secret missions for the ${GANGS.map(g => esc(g.name).replace(/ /g, '&nbsp;')).join(' &amp; ')}, from the reception to the muhurtham.</p>
+    </header>
+    ${stripHTML(ph)}
+    ${ROSTER.length ? whoHTML() : `<form id="join" class="panel">
+      <label>Your name<input name="name" maxlength="24" required autocomplete="nickname" placeholder="What the gang calls you"></label>
+      <label>4-digit PIN <small>to log back in on any phone</small>
+        <input name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required autocomplete="off" placeholder="••••"></label>
+      ${gangPick}
+      <button class="btn primary block" ${loaded ? '' : 'disabled'}>Join the game</button>
+      <p class="small dim" style="margin-top:12px">Already playing? Use the same name and PIN.</p>
+    </form>`}`;
+}
+
+// Join by picking your gang, tapping your own photo (from config ROSTER), then the PIN you were sent.
+let gangSel = GANGS[0].id;
+function whoHTML() {
+  const groups = GANGS.map(g => [g, ROSTER.filter(r => (r.gang ?? GANGS[0].id) === g.id)]).filter(([, rs]) => rs.length);
+  if (!groups.some(([g]) => g.id === gangSel)) gangSel = groups[0][0].id;
+  const pickGang = groups.length > 1
+    ? `<label class="gang-sel">Your gang<select id="gang-sel">${groups.map(([g]) => `<option value="${esc(g.id)}" ${g.id === gangSel ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>` : '';
+  return `<section class="panel"><h3 class="who-h">Who are you?</h3>
+    <p class="small dim">Pick your gang, tap your photo, then enter the PIN you were sent.</p>
+    ${pickGang}
+    ${groups.map(([g, rs]) => `<div class="pick" data-gang="${esc(g.id)}" ${g.id === gangSel ? '' : 'hidden'}>${rs.map(r => `<button type="button" class="pick-who" data-me="${esc(r.name)}">${avatar(r, 'av-lg')}<span>${esc(r.name)}</span></button>`).join('')}</div>`).join('')}
+  </section>`;
+}
+app.addEventListener('change', e => {
+  if (e.target.id !== 'gang-sel') return;
+  gangSel = e.target.value;
+  app.querySelectorAll('.pick[data-gang]').forEach(d => { d.hidden = d.dataset.gang !== gangSel; });
+});
+
+// View-only serving spots: a new dish lands in the spot the folded one left, so the others keep
+// their place and colour. Game state (p.active) is untouched.
+function slotted(p) {
+  const key = `slots:${GAME_ID}:${me}`;
+  let s = [];
+  try { s = JSON.parse(localStorage.getItem(key)) || []; } catch {}
+  const fresh = p.active.filter(id => !s.includes(id));
+  s = s.map(id => p.active.includes(id) ? id : fresh.shift()).filter(Boolean);
+  s.push(...fresh);
+  try { localStorage.setItem(key, JSON.stringify(s)); } catch {}
+  return s;
+}
+
+function mainHTML(p, ph) {
+  const list = ranked(players.filter(x => x.gang === p.gang));
+  const rank = list.findIndex(x => x.id === me) + 1;
+  const live = ph.state === 'live' && p.active.length > 0;
+  const empty = {
+    before: ['Get ready', 'Your missions unlock when Round 1 starts.'],
+    over: ['Game over', 'Check the leaderboard to see who won.'],
+    live: ['Dealing missions…', 'Your missions are on the way.'],
+  }[ph.state];
+  const body = live ? `
+    <ol class="dishes" aria-label="Your missions">${slotted(p).map((id, i) => `
+      <li class="dish${id === freshId ? ' served' : ''}${p.failed?.includes(id) ? ' failed' : ''}" data-slot="${i}" data-dish="${esc(id)}">
+        <p>${esc(byId[id]?.text ?? id)}</p>
+        ${p.failed?.includes(id) ? `<span class="stamp">${icon('eyeoff')}Failed it</span>` : `<div class="dish-btns">
+          <button class="btn" data-got="${esc(id)}">${icon('fold')}Got 'em</button>
+          <button class="btn fail" data-fail="${esc(id)}">Failed it</button></div>`}</li>`).join('')}</ol>`
+    : `<div class="empty-leaf"><h2>${empty[0]}</h2><p class="dim">${empty[1]}</p></div>`;
+  return `${demoBanner()}
+    ${stripHTML(ph)}
+    <header class="me">
+      <div class="me-id">${avatar(p, 'av-md')}
+        <div><h1>${esc(p.name)}</h1><p class="rank">#${rank} of ${list.length}</p></div></div>
+      <div class="score"><b>${p.score}</b><span>points</span></div>
+    </header>
+    ${body}
+    <p class="foot">Not ${esc(p.name)}? <button class="linkbtn" data-logout>Log out</button></p>`;
+}
+
+function render() {
+  if (holdRender) return;
+  const ph = phase(now()), p = mine();
+  if (me && !p) {
+    app.innerHTML = loaded ? '<div class="empty-leaf"><h2>Player not found</h2><p class="dim">Your player is not in the current game.</p><p style="margin-top:16px"><button class="btn primary" data-logout>Join again</button></p></div>' : '<p class="dim">Loading the game…</p>';
+    return;
+  }
+  const key = (p ? 'main' : 'join') + ph.state + loaded;
+  if (!p && key === viewKey) return; // don't wipe the join form while someone types
+  viewKey = key;
+  app.innerHTML = p ? mainHTML(p, ph) : joinHTML(ph);
+  freshId = null;
+  tick();
+}
+
+function tick() {
+  const ph = phase(now());
+  const k = ph.state;
+  if (k !== lastPhase) { lastPhase = k; render(); return; }
+  const cd = document.getElementById('cd'), bar = document.getElementById('bar');
+  if (cd && ph.until) cd.textContent = dur(ph.until - now());
+  if (bar) bar.style.transform = `scaleX(${Math.min(1, (now() - S) / (E - S))})`;
+}
+
+async function ensureHand() {
+  const ph = phase(now()), p = mine();
+  if (ph.state !== 'live' || !p || busy || !needsHand(p)) return;
+  busy = true;
+  try { await db.mutate([me], ps => { const q = refresh(ps[me], ph.deck); return q ? { players: { [me]: q } } : {}; }); }
+  catch (e) { console.warn(e); }
+  finally { busy = false; }
+}
+
+app.addEventListener('submit', async e => {
+  if (e.target.id !== 'join') return;
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const name = f.get('name').trim().replace(/\s+/g, ' '), pin = f.get('pin');
+  if (!name || !/^\d{4}$/.test(pin)) return toast('Enter a name and a 4-digit PIN.');
+  const existing = players.find(p => p.name.toLowerCase() === name.toLowerCase());
+  try {
+    if (existing) {
+      if (existing.pin !== pin) return toast('That name is taken, or the PIN is wrong.');
+      me = existing.id;
+    } else {
+      me = await db.addPlayer(newPlayer(name, pin, f.get('gang') || GANGS[0].id, now()));
+    }
+    localStorage.setItem(PID, me);
+    render();
+    ensureHand();
+  } catch (err) { toast('Could not join: ' + err.message); }
+});
+
+app.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  if (t.dataset.logout !== undefined) { localStorage.removeItem(PID); me = null; viewKey = ''; render(); }
+  if (t.dataset.got) openGot(t.dataset.got);
+  if (t.dataset.fail) openFail(t.dataset.fail);
+  if (t.dataset.me) openPin(t.dataset.me);
+});
+
+const pinDlg = document.getElementById('pin');
+function openPin(name) {
+  const r = rosterOf(name);
+  if (!r) return;
+  pinDlg.dataset.name = r.name;
+  document.getElementById('pin-av').innerHTML = avatar(r, 'av-lg');
+  document.getElementById('pin-h').textContent = `Hi ${r.name}!`;
+  pinDlg.querySelector('input').value = '';
+  pinDlg.showModal();
+}
+
+pinDlg.querySelector('form').addEventListener('submit', async e => {
+  if (e.submitter?.value !== 'ok') return;
+  e.preventDefault();
+  const r = rosterOf(pinDlg.dataset.name), pin = pinDlg.querySelector('input').value.trim();
+  if (!r) return;
+  if (pin !== String(r.pin)) return toast('Wrong PIN. Check the PIN you were sent.');
+  if (!loaded) return toast('Still loading. Try again in a second.');
+  try {
+    const existing = players.find(p => p.name.toLowerCase() === r.name.toLowerCase());
+    me = existing ? existing.id : await db.addPlayer(newPlayer(r.name, String(r.pin), r.gang ?? GANGS[0].id, now()));
+    localStorage.setItem(PID, me);
+    pinDlg.close();
+    render();
+    ensureHand();
+  } catch (err) { toast('Could not join: ' + err.message); }
+});
+
+function openGot(mid) {
+  if (!others().length) return toast('Nobody else from your gang has joined yet.');
+  gotDlg.dataset.mid = mid;
+  document.getElementById('got-q').textContent = byId[mid]?.text ?? '';
+  document.getElementById('got-pick').innerHTML = others().map(p =>
+    `<button type="button" class="pick-who" data-victim="${esc(p.id)}">${avatar(p, 'av-lg')}<span>${esc(p.name)}</span></button>`).join('');
+  gotDlg.showModal();
+}
+
+// Step 2: tap a face, then the face-to-face reveal. The victim reads it on your phone and confirms.
+document.getElementById('got-pick').addEventListener('click', e => {
+  const b = e.target.closest('[data-victim]');
+  const victim = b && players.find(p => p.id === b.dataset.victim);
+  if (!victim) return;
+  gotDlg.close();
+  document.getElementById('reveal-av').innerHTML = avatar(victim, 'av-xl');
+  revealDlg.dataset.mid = gotDlg.dataset.mid;
+  revealDlg.dataset.victim = victim.id;
+  document.getElementById('reveal-h').textContent = `Gotcha, ${victim.name}!`;
+  document.getElementById('reveal-sub').textContent = `${mine().name} got you. The secret mission was:`;
+  document.getElementById('reveal-mission').textContent = byId[gotDlg.dataset.mid]?.text ?? '';
+  document.getElementById('reveal-note').textContent = `${victim.name}, did you get caught?`;
+  revealDlg.showModal();
+});
+
+const pause = ms => new Promise(r => setTimeout(r, ms));
+const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+revealDlg.querySelector('form').addEventListener('submit', async e => {
+  if (e.submitter?.value === 'no') return markFailed(revealDlg.dataset.mid, players.find(p => p.id === revealDlg.dataset.victim));
+  if (e.submitter?.value !== 'ok') return;
+  const ph = phase(now());
+  if (ph.state !== 'live') return toast('No live wave right now.');
+  const mid = revealDlg.dataset.mid;
+  const victim = players.find(p => p.id === revealDlg.dataset.victim);
+  const dish = app.querySelector(`[data-dish="${CSS.escape(mid)}"]`);
+  holdRender = true; // let the fold play before the new dish replaces it
+  dish?.classList.add('folding');
+  try {
+    const [r] = await Promise.all([
+      db.mutate([me], ps => gotEm(ps, me, mid, victim && { id: victim.id, name: victim.name }, ph.deck, now())),
+      motionOK() ? pause(420) : null,
+    ]);
+    freshId = r.players[me].active.at(-1);
+    toast(`+${GAME.points} points! ${victim.name} got caught.`);
+  } catch (err) { toast(err.message); }
+  holdRender = false;
+  render();
+});
+
+// Failed it: from the card (called out mid-attempt) or from the reveal (they saw it coming).
+const failDlg = document.getElementById('fail');
+function openFail(mid) {
+  failDlg.dataset.mid = mid;
+  document.getElementById('fail-q').textContent = byId[mid]?.text ?? '';
+  failDlg.showModal();
+}
+failDlg.querySelector('form').addEventListener('submit', e => {
+  if (e.submitter?.value === 'ok') markFailed(failDlg.dataset.mid, null);
+});
+
+async function markFailed(mid, by) {
+  if (phase(now()).state !== 'live') return toast('The game is not running right now.');
+  try {
+    await db.mutate([me], ps => failIt(ps, me, mid, by && { id: by.id, name: by.name }, now()));
+    toast(by ? `Mission failed. ${by.name} saw it coming.` : 'Mission failed.');
+  } catch (err) { toast(err.message); }
+}
+</script>
+</body>
+</html>
