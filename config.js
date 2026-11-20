@@ -10,7 +10,7 @@ export const TITLE = 'Kalyanam Covert Ops';
 
 // One entry per gang. Missions can target a gang via `gangs: ['idc']` in rules.js.
 export const GANGS = [
-  { id: 'idc', name: 'IDC Friends' },
+  { id: 'idc', name: 'Lokesh Friends' },
   { id: 'cousins', name: 'Cousins' },
 ];
 
@@ -23,7 +23,7 @@ export const GANGS = [
 // ponytail: PINs live in this public file; fine for a party game, not for anything secret.
 export const ROSTER = [
   // { name: 'Arjun', gang: 'idc', pin: '4821', photo: 'photos/arjun.jpg' },
-  // Gang 1: IDC Friends
+  // Gang 1: Lokesh Friends
   { name: 'Anurag',  gang: 'idc', pin: '3392' },
   { name: 'Krishna', gang: 'idc', pin: '8201' },
   { name: 'Parth',   gang: 'idc', pin: '5229' },
