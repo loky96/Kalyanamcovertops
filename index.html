@@ -60,7 +60,7 @@
 
 <script type="module">
 import { db, now, gamePhase, esc, dur, when, ranked, toast, demoBanner, icon, tabs, avatar, rosterOf } from './game.js';
-import { GAME, HAND, byId, newPlayer, needsHand, refresh, gotEm, failIt } from './rules.js';
+import { GAME, DIFFICULTIES, byId, newPlayer, needsHand, refresh, gotEm, failIt } from './rules.js';
 import { TITLE, GANGS, GAME_ID, ROSTER, TEST_MODE } from './config.js';
 
 const app = document.getElementById('app');
@@ -144,16 +144,14 @@ app.addEventListener('change', e => {
   app.querySelectorAll('.pick[data-gang]').forEach(d => { d.hidden = d.dataset.gang !== gangSel; });
 });
 
-// View-only serving spots: a new dish lands in the spot the folded one left, so the others keep
-// their place and colour. Game state (p.active) is untouched.
+// Older hands stored their visual slot order on this phone.
 function slotted(p) {
-  const key = `slots:${GAME_ID}:${me}`;
+  const key = `slots:${GAME_ID}:${p.id}`;
   let s = [];
   try { s = JSON.parse(localStorage.getItem(key)) || []; } catch {}
   const fresh = p.active.filter(id => !s.includes(id));
   s = s.map(id => p.active.includes(id) ? id : fresh.shift()).filter(Boolean);
   s.push(...fresh);
-  try { localStorage.setItem(key, JSON.stringify(s)); } catch {}
   return s;
 }
 
@@ -168,18 +166,23 @@ function mainHTML(p, ph) {
   const logout = `<p class="foot">Not ${esc(p.name)}? <button class="linkbtn" data-logout>Log out</button></p>`;
   if (ph.state === 'before') return beforeHTML(ph, demoBanner() + header, logout);
 
-  const live = ph.state === 'live' && p.active.length > 0;
+  const live = ph.state === 'live' && p.handSlots;
   const empty = {
     over: ['Game over', 'Check the leaderboard to see who won.'],
     live: ['Dealing missions…', 'Your missions are on the way.'],
   }[ph.state];
   const body = live ? `
-    <ol class="dishes" aria-label="Your missions">${slotted(p).map((id, i) => `
+    <ol class="dishes" aria-label="Your missions">${p.active.map((id, i) => {
+      const mission = byId[id];
+      if (!mission) return `<li class="dish" data-slot="${i}"><p>No new mission for this slot right now.</p></li>`;
+      return `
       <li class="dish${id === freshId ? ' served' : ''}${p.failed?.includes(id) ? ' failed' : ''}" data-slot="${i}" data-dish="${esc(id)}">
-        <p>${esc(byId[id]?.text ?? id)}</p>
+        <span class="mission-level">${mission.kind === 'say' ? 'Say it' : 'Do it'} · ${DIFFICULTIES[mission.difficulty - 1]}</span>
+        <p>${esc(mission.text)}</p>
         ${p.failed?.includes(id) ? `<span class="stamp">${icon('eyeoff')}Spotted</span>` : `<div class="dish-btns">
           <button class="btn" data-got="${esc(id)}">${icon('fold')}Got 'em</button>
-          <button class="btn fail" data-fail="${esc(id)}">They saw it coming</button></div>`}</li>`).join('')}</ol>`
+          <button class="btn fail" data-fail="${esc(id)}">They saw it coming</button></div>`}</li>`;
+    }).join('')}</ol>`
     : `<div class="empty-leaf"><h2>${empty[0]}</h2><p class="dim">${empty[1]}</p></div>`;
   return `${demoBanner()}${stripHTML(ph)}${header}${body}${logout}`;
 }
@@ -210,9 +213,16 @@ function tick() {
 
 async function ensureHand() {
   const ph = gamePhase(), p = mine();
-  if (ph.state !== 'live' || !p || busy || !needsHand(p)) return;
+  if (ph.state !== 'live' || !p || busy || !needsHand(p, ph.deck)) return;
+  const id = p.id;
   busy = true;
-  try { await db.mutate([me], ps => { const q = refresh(ps[me], ph.deck); return q ? { players: { [me]: q } } : {}; }); }
+  try {
+    await db.mutate([id], ps => {
+      const current = ps[id];
+      const hand = refresh(current.handSlots ? current : { ...current, active: slotted(current) }, ph.deck);
+      return hand ? { players: { [id]: hand } } : {};
+    });
+  }
   catch (e) { console.warn(e); }
   finally { busy = false; }
 }
@@ -357,7 +367,7 @@ revealDlg.querySelector('form').addEventListener('submit', async e => {
       db.mutate([me], ps => gotEm(ps, me, mid, victim, ph.deck, now())),
       motionOK() ? pause(420) : null,
     ]);
-    freshId = r.players[me].active.at(-1);
+    freshId = r.replacement;
     toast(`+${GAME.points} points! ${victim.name} got caught.`);
   } catch (err) { toast(err.message); }
   holdRender = false;

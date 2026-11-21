@@ -132,6 +132,7 @@ input:focus, select:focus { outline: none; border-color: var(--sambar); }
 .dish[data-slot="1"], .dish[data-slot="4"], .dish[data-slot="7"] { width: 92%; justify-self: end; rotate: .8deg; background: var(--payasam); border-radius: var(--dollop-2); }
 .dish[data-slot="2"], .dish[data-slot="5"] { width: 92%; justify-self: start; rotate: -.5deg; margin-left: 10px; background: var(--beetroot); color: var(--rice); border-radius: var(--dollop-3); }
 .dish p { font-size: 20px; font-weight: 700; line-height: 1.18; margin-bottom: 10px; text-wrap: pretty; }
+.mission-level { display: block; margin-bottom: 4px; font-size: 14px; font-weight: 800; }
 .dish .btn { min-height: 48px; background: var(--ink); color: var(--rice); }
 .dish[data-slot="2"] .btn, .dish[data-slot="5"] .btn { background: var(--rice); color: var(--beetroot); }
 .dish-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }

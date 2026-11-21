@@ -172,7 +172,7 @@ export function howHTML() {
     ? 'Test mode is on. You can play at any hour.'
     : `The game runs non-stop from <b>${when(S)}</b> to <b>${when(E)}</b>.`;
   const steps = [
-    ['cards', `Get ${HAND} secret missions`, 'Each one is a dare: get a friend to do something without them realising.'],
+    ['cards', `Get ${HAND} secret missions`, 'Get a friend to say something on four cards and do something on four cards. Each set goes from easy to hard.'],
     ['chat', 'Pull it off, quietly', 'Steer the chat, act natural, keep your screen hidden.'],
     ['phone', 'Reveal it to their face', "Tap <b>Got 'em</b>, tap their photo, and show them your phone."],
   ];
@@ -180,7 +180,7 @@ export function howHTML() {
     <ol class="steps">${steps.map(([ic, h, p]) => `<li class="step"><span class="step-ic">${icon(ic)}</span><div><h4>${h}</h4><p>${p}</p></div></li>`).join('')}
       <li class="step has-fork"><span class="step-ic">${icon('ask')}</span><h4>Did they see it coming?</h4>
         <div class="fork">
-          <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Caught!</b><p>They tap <b>Yes, I got caught</b>. You get <b>+${GAME.points}</b> and a new mission.</p></div>
+          <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Caught!</b><p>They tap <b>Yes, I got caught</b>. You score <b>+${GAME.points}</b> and get another mission of the same type and difficulty when one is available.</p></div>
           <div class="branch no"><span class="b-ic">${icon('eyeoff')}</span><b>They say no</b><p>They tap <b>No</b>. Keep playing the same mission.</p></div>
         </div></li>
       <li class="step has-fork"><span class="step-ic">${icon('shout')}</span><h4>Smell a setup? Call it out</h4>
