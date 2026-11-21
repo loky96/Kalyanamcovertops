@@ -11,8 +11,8 @@ export const TITLE = 'Kalyanam Covert Ops';
 // One entry per gang. Missions can target a gang via `gangs: ['idc']` in rules.js.
 export const GANGS = [
   { id: 'idc', name: 'Loky IDC friends' },
-  { id: 'cousins', name: 'Cousins' },
-  { id: 'wow', name: 'WOW Friends' },
+  { id: 'cousins', name: "Loky's cousins" },
+  { id: 'wow', name: "Loky's Chennai friends" },
   { id: 'somi-sis', name: 'Somi Sis friends' },
 ];
 
@@ -40,7 +40,7 @@ export const ROSTER = [
   { name: 'Suriya',  gang: 'idc', pin: '4719' },
   { name: 'Sandy',   gang: 'idc', pin: '1863' },
   { name: 'Jaanhvi', gang: 'idc', pin: '6407' },
-  // Gang 2: Cousins
+  // Gang 2: Loky's cousins
   { name: 'Somi',      gang: 'cousins', pin: '2746' },
   { name: 'Moni',      gang: 'cousins', pin: '8159' },
   { name: 'Giri',      gang: 'cousins', pin: '3604' },
@@ -57,7 +57,7 @@ export const ROSTER = [
   { name: 'Varshita',  gang: 'cousins', pin: '7954' },
   { name: 'Tej Kiren', gang: 'cousins', pin: '6185' },
   { name: 'Logitha',   gang: 'cousins', pin: '4530' },
-  // Gang 3: WOW Friends
+  // Gang 3: Loky's Chennai friends
   { name: 'Mithelesh', gang: 'wow', pin: '9044' },
   { name: 'Bharath',   gang: 'wow', pin: '7311' },
   { name: 'Ravi',      gang: 'wow', pin: '0758' },
