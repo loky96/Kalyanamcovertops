@@ -37,15 +37,12 @@
   </form>
 </dialog>
 
-<dialog id="fail" aria-labelledby="fail-h">
+<dialog id="fail" class="reveal callout-pick" aria-labelledby="fail-h">
   <form method="dialog">
-    <h3 id="fail-h">Got called out?</h3>
-    <p class="q" id="fail-q"></p>
-    <p class="note">This mission fails. It turns red and can't be completed for the rest of the game.</p>
-    <div class="row">
-      <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
-      <button class="btn primary" value="ok">Failed it</button>
-    </div>
+    <h2 id="fail-h">Who saw it coming?</h2>
+    <p class="reveal-sub">Pick the friend who spotted your mission.</p>
+    <div class="pick" id="fail-pick"></div>
+    <button class="btn ghost block" value="cancel">Cancel</button>
   </form>
 </dialog>
 
@@ -56,8 +53,8 @@
     <p class="reveal-sub" id="reveal-sub"></p>
     <p class="reveal-mission" id="reveal-mission"></p>
     <p class="note" id="reveal-note"></p>
-    <button class="btn block yes" value="ok">Yes, I got caught</button>
-    <button class="btn ghost block no" value="no" formnovalidate>No, I didn't get caught</button>
+    <button class="btn block yes" id="reveal-yes" value="ok">Yes, I got caught</button>
+    <button class="btn ghost block no" id="reveal-no" value="no" formnovalidate>No, I didn't get caught</button>
   </form>
 </dialog>
 
@@ -68,6 +65,7 @@ import { TITLE, GANGS, GAME_ID, ROSTER, TEST_MODE } from './config.js';
 
 const app = document.getElementById('app');
 const gotDlg = document.getElementById('got'), revealDlg = document.getElementById('reveal');
+const failDlg = document.getElementById('fail');
 const PID = 'pid:' + GAME_ID;
 let me = localStorage.getItem(PID), players = [], loaded = false;
 let viewKey = '', busy = false, lastPhase = '', holdRender = false, freshId = null;
@@ -179,9 +177,9 @@ function mainHTML(p, ph) {
     <ol class="dishes" aria-label="Your missions">${slotted(p).map((id, i) => `
       <li class="dish${id === freshId ? ' served' : ''}${p.failed?.includes(id) ? ' failed' : ''}" data-slot="${i}" data-dish="${esc(id)}">
         <p>${esc(byId[id]?.text ?? id)}</p>
-        ${p.failed?.includes(id) ? `<span class="stamp">${icon('eyeoff')}Failed it</span>` : `<div class="dish-btns">
+        ${p.failed?.includes(id) ? `<span class="stamp">${icon('eyeoff')}Spotted</span>` : `<div class="dish-btns">
           <button class="btn" data-got="${esc(id)}">${icon('fold')}Got 'em</button>
-          <button class="btn fail" data-fail="${esc(id)}">Failed it</button></div>`}</li>`).join('')}</ol>`
+          <button class="btn fail" data-fail="${esc(id)}">They saw it coming</button></div>`}</li>`).join('')}</ol>`
     : `<div class="empty-leaf"><h2>${empty[0]}</h2><p class="dim">${empty[1]}</p></div>`;
   return `${demoBanner()}${stripHTML(ph)}${header}${body}${logout}`;
 }
@@ -244,8 +242,8 @@ app.addEventListener('click', e => {
   const t = e.target.closest('button');
   if (!t) return;
   if (t.dataset.logout !== undefined) { localStorage.removeItem(PID); me = null; viewKey = ''; render(); }
-  if (t.dataset.got) openGot(t.dataset.got);
-  if (t.dataset.fail) openFail(t.dataset.fail);
+  if (t.dataset.got) openFriendPicker(gotDlg, t.dataset.got);
+  if (t.dataset.fail) openFriendPicker(failDlg, t.dataset.fail);
   if (t.dataset.me) openPin(t.dataset.me, t.closest('[data-gang]').dataset.gang);
 });
 
@@ -296,30 +294,42 @@ pinDlg.querySelector('form').addEventListener('submit', async e => {
   } catch (err) { toast('Could not join: ' + err.message); }
 });
 
-function openGot(mid) {
-  if (!others().length) return toast('Nobody else from your gang has joined yet.');
-  gotDlg.dataset.mid = mid;
-  document.getElementById('got-q').textContent = byId[mid]?.text ?? '';
-  document.getElementById('got-pick').innerHTML = others().map(p =>
+function openFriendPicker(dialog, mid) {
+  const friends = others();
+  if (!friends.length) return toast('Nobody else from your gang has joined yet.');
+  dialog.dataset.mid = mid;
+  if (dialog === gotDlg) document.getElementById('got-q').textContent = byId[mid]?.text ?? '';
+  dialog.querySelector('.pick').innerHTML = friends.map(p =>
     `<button type="button" class="pick-who" data-victim="${esc(p.id)}">${avatar(p, 'av-lg')}<span>${esc(p.name)}</span></button>`).join('');
-  gotDlg.showModal();
+  dialog.showModal();
 }
 
-// Step 2: tap a face, then the face-to-face reveal. The victim reads it on your phone and confirms.
-document.getElementById('got-pick').addEventListener('click', e => {
-  const b = e.target.closest('[data-victim]');
-  const victim = b && players.find(p => p.id === b.dataset.victim);
-  if (!victim) return;
-  gotDlg.close();
-  document.getElementById('reveal-av').innerHTML = avatar(victim, 'av-xl');
-  revealDlg.dataset.mid = gotDlg.dataset.mid;
-  revealDlg.dataset.victim = victim.id;
-  document.getElementById('reveal-h').textContent = `Gotcha, ${victim.name}!`;
-  document.getElementById('reveal-sub').textContent = `Show this to ${victim.name}.`;
-  document.getElementById('reveal-mission').textContent = byId[gotDlg.dataset.mid]?.text ?? '';
-  document.getElementById('reveal-note').textContent = `${victim.name}, did ${mine().name} catch you?`;
+// The selected friend confirms face to face on the player's phone.
+for (const dialog of [gotDlg, failDlg]) {
+  dialog.querySelector('.pick').addEventListener('click', e => {
+    const id = e.target.closest('[data-victim]')?.dataset.victim;
+    const friend = others().find(p => p.id === id);
+    if (!friend) return;
+    dialog.close();
+    showReveal(dialog.dataset.mid, friend, dialog === failDlg);
+  });
+}
+
+function showReveal(mid, friend, spotted) {
+  document.getElementById('reveal-av').innerHTML = avatar(friend, 'av-xl');
+  revealDlg.dataset.mid = mid;
+  revealDlg.dataset.victim = friend.id;
+  revealDlg.dataset.outcome = spotted ? 'spotted' : 'caught';
+  document.getElementById('reveal-h').textContent = spotted ? 'Spotted!' : `Gotcha, ${friend.name}!`;
+  document.getElementById('reveal-sub').textContent = `Show this to ${friend.name}.`;
+  document.getElementById('reveal-mission').textContent = byId[mid]?.text ?? '';
+  document.getElementById('reveal-note').textContent = spotted
+    ? `${friend.name}, did you spot ${mine().name}'s mission?`
+    : `${friend.name}, did ${mine().name} catch you?`;
+  document.getElementById('reveal-yes').textContent = spotted ? 'Yes, I saw it coming' : 'Yes, I got caught';
+  document.getElementById('reveal-no').textContent = spotted ? 'Cancel' : "No, I didn't get caught";
   revealDlg.showModal();
-});
+}
 
 const pause = ms => new Promise(r => setTimeout(r, ms));
 const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -328,15 +338,23 @@ revealDlg.querySelector('form').addEventListener('submit', async e => {
   if (e.submitter?.value === 'no') return toast('Mission still in play.');
   if (e.submitter?.value !== 'ok') return;
   const ph = gamePhase();
-  if (ph.state !== 'live') return toast('No live wave right now.');
+  if (ph.state !== 'live') return toast('The game is not running right now.');
   const mid = revealDlg.dataset.mid;
-  const victim = players.find(p => p.id === revealDlg.dataset.victim);
+  const victim = others().find(p => p.id === revealDlg.dataset.victim);
+  if (!victim) return toast('That friend is no longer available.');
+  if (revealDlg.dataset.outcome === 'spotted') {
+    try {
+      await db.mutate([me], ps => failIt(ps, me, mid, victim, now()));
+      toast(`${victim.name} saw it coming.`);
+    } catch (err) { toast(err.message); }
+    return;
+  }
   const dish = app.querySelector(`[data-dish="${CSS.escape(mid)}"]`);
   holdRender = true; // let the fold play before the new dish replaces it
   dish?.classList.add('folding');
   try {
     const [r] = await Promise.all([
-      db.mutate([me], ps => gotEm(ps, me, mid, victim && { id: victim.id, name: victim.name }, ph.deck, now())),
+      db.mutate([me], ps => gotEm(ps, me, mid, victim, ph.deck, now())),
       motionOK() ? pause(420) : null,
     ]);
     freshId = r.players[me].active.at(-1);
@@ -346,24 +364,6 @@ revealDlg.querySelector('form').addEventListener('submit', async e => {
   render();
 });
 
-// Failed it: the player was called out and marked the card themselves.
-const failDlg = document.getElementById('fail');
-function openFail(mid) {
-  failDlg.dataset.mid = mid;
-  document.getElementById('fail-q').textContent = byId[mid]?.text ?? '';
-  failDlg.showModal();
-}
-failDlg.querySelector('form').addEventListener('submit', e => {
-  if (e.submitter?.value === 'ok') markFailed(failDlg.dataset.mid);
-});
-
-async function markFailed(mid) {
-  if (gamePhase().state !== 'live') return toast('The game is not running right now.');
-  try {
-    await db.mutate([me], ps => failIt(ps, me, mid, null, now()));
-    toast('Mission failed.');
-  } catch (err) { toast(err.message); }
-}
 </script>
 </body>
 </html>

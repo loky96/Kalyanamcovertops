@@ -151,11 +151,11 @@ export function eventHTML(e) {
   const who = `<b>${esc(e.byName)}</b>`, vic = `<b>${esc(e.victimName)}</b>`;
   const [line, ic] = {
     got: [`${vic} got caught by ${who}`, 'fold'],
-    failed: [e.victimName ? `${vic} saw through ${who}` : `${who} got called out`, 'eyeoff'],
+    failed: [e.victimName ? `${vic} spotted ${who}'s mission` : `${who} got called out`, 'eyeoff'],
   }[e.type] ?? [];
   if (!line) return ''; // retired event types (old demo data)
   // The mission stays secret in the feed: only who caught who.
-  return `<li class="ev ev-${esc(e.type)}"><span class="ev-mark">${icon(ic)}</span><span class="ev-text">${line}</span>${d ? `<span class="pts">${d > 0 ? '+' : '−'}${Math.abs(d)}</span>` : '<span class="pts fail-tag">Failed</span>'}</li>`;
+  return `<li class="ev ev-${esc(e.type)}"><span class="ev-mark">${icon(ic)}</span><span class="ev-text">${line}</span>${d ? `<span class="pts">${d > 0 ? '+' : '−'}${Math.abs(d)}</span>` : '<span class="pts fail-tag">Spotted</span>'}</li>`;
 }
 
 // Bottom tab bar shared by the player pages.
@@ -185,7 +185,7 @@ export function howHTML() {
         </div></li>
       <li class="step has-fork"><span class="step-ic">${icon('shout')}</span><h4>Smell a setup? Call it out</h4>
         <div class="fork">
-          <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Right guess</b><p>Say their mission out loud. They tap <b>Failed it</b> and it stays red.</p></div>
+          <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Right guess</b><p>They tap <b>They saw it coming</b>, pick your name, and show you the phone. When you confirm, their mission turns red.</p></div>
           <div class="branch no"><span class="b-ic">${icon('cross')}</span><b>Wrong guess</b><p>No penalty. Everyone just knows you're watching.</p></div>
         </div></li></ol>
     <p class="game-time">${icon('clock')}<span>${timing} Every catch is <b>+${GAME.points} points</b>.</span></p>
