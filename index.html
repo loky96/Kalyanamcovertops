@@ -67,6 +67,9 @@ const app = document.getElementById('app');
 const gotDlg = document.getElementById('got'), revealDlg = document.getElementById('reveal');
 const failDlg = document.getElementById('fail');
 const PID = 'pid:' + GAME_ID;
+const inviteParams = new URLSearchParams(location.search);
+const inviteGang = inviteParams.get('gang'), inviteName = inviteParams.get('player');
+const invitation = inviteGang && inviteName ? rosterOf(inviteName, inviteGang) : null;
 let me = localStorage.getItem(PID), players = [], loaded = false;
 let viewKey = '', busy = false, lastPhase = '', holdRender = false, freshId = null;
 
@@ -118,15 +121,18 @@ function joinHTML(ph) {
       <button class="btn primary block" ${loaded ? '' : 'disabled'}>Join the game</button>
       <p class="small dim" style="margin-top:12px">Already playing? Use the same name and PIN.</p>
     </form>`;
+  const inviteButton = invitation
+    ? `<button type="button" class="btn primary" data-me="${esc(invitation.name)}" data-gang="${esc(invitation.gang)}">Join as ${esc(invitation.name)}</button>`
+    : '';
   if (ph.state === 'before') {
-    const action = '<a class="btn primary" href="#join-game">Join the game</a>';
+    const action = inviteButton || '<a class="btn primary" href="#join-game">Join the game</a>';
     return `${beforeHTML(ph, demoBanner() + hero, action)}<div id="join-game" tabindex="-1">${join}</div>`;
   }
-  return `${demoBanner()}${hero}${stripHTML(ph)}${join}`;
+  return `${demoBanner()}${hero}${stripHTML(ph)}${inviteButton}${join}`;
 }
 
 // Join by picking your gang, tapping your own photo (from config ROSTER), then the PIN you were sent.
-let gangSel = GANGS[0].id;
+let gangSel = invitation?.gang ?? GANGS[0].id;
 function whoHTML() {
   const groups = GANGS.map(g => [g, ROSTER.filter(r => (r.gang ?? GANGS[0].id) === g.id)]).filter(([, rs]) => rs.length);
   if (!groups.some(([g]) => g.id === gangSel)) gangSel = groups[0][0].id;

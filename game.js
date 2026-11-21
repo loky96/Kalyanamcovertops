@@ -4,8 +4,8 @@ import { HAND, GAME, phase } from './rules.js';
 
 export const isDemo = !SUPABASE.url.startsWith('https://');
 
-// ?now=2026-11-21T20:00:00+05:30 fakes the clock for testing; time keeps ticking from there.
-const fake = Date.parse(new URLSearchParams(location.search).get('now'));
+// The clock override is only available in test or local demo mode.
+const fake = TEST_MODE || isDemo ? Date.parse(new URLSearchParams(location.search).get('now')) : NaN;
 const skew = isNaN(fake) ? 0 : fake - Date.now();
 export const now = () => Date.now() + skew;
 export const gamePhase = () => phase(now(), TEST_MODE);

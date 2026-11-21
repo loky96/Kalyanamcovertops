@@ -84,6 +84,6 @@ export const ROSTER = [
 ];
 
 // Change to start a fresh game (e.g. 'wedding' after testing). Old data stays under the old id.
-export const GAME_ID = 'test1';
+export const GAME_ID = 'wedding';
 export const TEST_MODE = GAME_ID === 'test1';
 
