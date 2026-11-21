@@ -1,6 +1,6 @@
 // Data layer + small UI helpers shared by the player and leaderboard pages.
-import { SUPABASE, GAME_ID, GANGS, ROSTER } from './config.js';
-import { HAND, GAME } from './rules.js';
+import { SUPABASE, GAME_ID, GANGS, ROSTER, TEST_MODE } from './config.js';
+import { HAND, GAME, phase } from './rules.js';
 
 export const isDemo = !SUPABASE.url.startsWith('https://');
 
@@ -8,6 +8,7 @@ export const isDemo = !SUPABASE.url.startsWith('https://');
 const fake = Date.parse(new URLSearchParams(location.search).get('now'));
 const skew = isNaN(fake) ? 0 : fake - Date.now();
 export const now = () => Date.now() + skew;
+export const gamePhase = () => phase(now(), TEST_MODE);
 
 // db API (same for Supabase and demo):
 //   onPlayers(cb), onEvents(cb, n)  — live lists, return unsubscribe
@@ -167,6 +168,9 @@ export const tabs = active => `<nav class="tabs" aria-label="Game">
 // How to play, shown on its own tab (rules.html).
 export function howHTML() {
   const S = Date.parse(GAME.start), E = Date.parse(GAME.end);
+  const timing = TEST_MODE
+    ? 'Test mode is on. You can play at any hour.'
+    : `The game runs non-stop from <b>${when(S)}</b> to <b>${when(E)}</b>.`;
   const steps = [
     ['cards', `Get ${HAND} secret missions`, 'Each one is a dare: get a friend to do something without them realising.'],
     ['chat', 'Pull it off, quietly', 'Steer the chat, act natural, keep your screen hidden.'],
@@ -184,7 +188,7 @@ export function howHTML() {
           <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Right guess</b><p>Say their mission out loud. They tap <b>Failed it</b> and it stays red.</p></div>
           <div class="branch no"><span class="b-ic">${icon('cross')}</span><b>Wrong guess</b><p>No penalty. Everyone just knows you're watching.</p></div>
         </div></li></ol>
-    <p class="game-time">${icon('clock')}<span>The game runs non-stop from <b>${when(S)}</b> to <b>${when(E)}</b>. Every catch is <b>+${GAME.points} points</b>.</span></p>
+    <p class="game-time">${icon('clock')}<span>${timing} Every catch is <b>+${GAME.points} points</b>.</span></p>
   </section>`;
 }
 

@@ -23,9 +23,9 @@
 </main>
 <div id="tabs"></div>
 <script type="module">
-import { db, now, esc, dur, when, ranked, eventHTML, demoBanner, tabs, avatar } from './game.js';
-import { phase, GAME } from './rules.js';
-import { GANGS, GAME_ID } from './config.js';
+import { db, now, gamePhase, esc, dur, when, ranked, eventHTML, demoBanner, tabs, avatar } from './game.js';
+import { GAME } from './rules.js';
+import { GANGS, GAME_ID, TEST_MODE } from './config.js';
 
 const $ = id => document.getElementById(id);
 const me = localStorage.getItem('pid:' + GAME_ID);
@@ -58,18 +58,20 @@ function render() {
 
 const S = Date.parse(GAME.start), E = Date.parse(GAME.end);
 function tick() {
-  const ph = phase(now());
+  const ph = gamePhase();
   const left = ph.until ? dur(ph.until - now()) : '';
   const bar = `<div class="bar" aria-hidden="true"><i style="transform:scaleX(${Math.min(1, (now() - S) / (E - S))})"></i></div>`;
   $('strip').className = 'strip ' + ph.state;
   $('strip').innerHTML = {
     before: `<div class="strip-top"><h2>Game starts soon</h2></div><p>Starts ${when(S)} · in ${left}</p>`,
-    live: `<div class="strip-top"><h2>Game on</h2><span class="pts-each">+${GAME.points} per catch</span></div><p>Ends ${when(E)} · ${left} left</p>${bar}`,
+    live: TEST_MODE
+      ? `<div class="strip-top"><h2>Test mode</h2><span class="pts-each">+${GAME.points} per catch</span></div><p>Game on. Play anytime.</p>`
+      : `<div class="strip-top"><h2>Game on</h2><span class="pts-each">+${GAME.points} per catch</span></div><p>Ends ${when(E)} · ${left} left</p>${bar}`,
     over: `<div class="strip-top"><h2>Game over</h2></div><p>Final standings</p>`,
   }[ph.state];
 }
 tick();
-setInterval(tick, 10000);
+if (!TEST_MODE) setInterval(tick, 10000);
 </script>
 </body>
 </html>

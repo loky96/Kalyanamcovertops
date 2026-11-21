@@ -128,10 +128,15 @@ export const byId = Object.fromEntries(MISSIONS.map(m => [m.id, m]));
 const T = s => Date.parse(s);
 
 // Where the game is at time t: before | live | over. `deck` is the current time-of-day mission set.
-export function phase(t) {
-  if (t < T(GAME.start)) return { state: 'before', until: T(GAME.start) };
-  if (t >= T(GAME.end)) return { state: 'over' };
-  return { state: 'live', until: T(GAME.end), deck: TIMES.filter(x => t >= T(x.from)).at(-1).id };
+export function phase(t, testMode = false) {
+  const start = T(GAME.start), end = T(GAME.end);
+  const inWindow = t >= start && t < end;
+  if (!testMode && !inWindow) {
+    return t < start ? { state: 'before', until: start } : { state: 'over' };
+  }
+  const deckTime = inWindow ? t : start;
+  const deck = TIMES.filter(x => deckTime >= T(x.from)).at(-1).id;
+  return testMode ? { state: 'live', deck } : { state: 'live', until: end, deck };
 }
 
 export const missionsFor = (waveId, gang) => MISSIONS.filter(m =>

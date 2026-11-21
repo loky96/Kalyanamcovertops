@@ -62,9 +62,9 @@
 </dialog>
 
 <script type="module">
-import { db, now, esc, dur, when, ranked, toast, demoBanner, icon, tabs, avatar, rosterOf } from './game.js';
-import { GAME, HAND, byId, phase, newPlayer, needsHand, refresh, gotEm, failIt } from './rules.js';
-import { TITLE, GANGS, GAME_ID, ROSTER } from './config.js';
+import { db, now, gamePhase, esc, dur, when, ranked, toast, demoBanner, icon, tabs, avatar, rosterOf } from './game.js';
+import { GAME, HAND, byId, newPlayer, needsHand, refresh, gotEm, failIt } from './rules.js';
+import { TITLE, GANGS, GAME_ID, ROSTER, TEST_MODE } from './config.js';
 
 const app = document.getElementById('app');
 const gotDlg = document.getElementById('got'), revealDlg = document.getElementById('reveal');
@@ -85,7 +85,9 @@ const S = Date.parse(GAME.start), E = Date.parse(GAME.end);
 function stripHTML(ph) {
   const [title, side, line, bar] = {
     before: ['Game starts soon', '', `Starts ${when(S)} · in <b id="cd"></b>`, false],
-    live: ['Game on', `+${GAME.points} per catch`, `Ends ${when(E)} · <b id="cd"></b> left`, true],
+    live: TEST_MODE
+      ? ['Test mode', `+${GAME.points} per catch`, 'Game on. Play anytime.', false]
+      : ['Game on', `+${GAME.points} per catch`, `Ends ${when(E)} · <b id="cd"></b> left`, true],
     over: ['Game over', '', 'Final scores are in. Check the leaderboard.', false],
   }[ph.state];
   return `<section class="strip ${ph.state}" aria-live="polite">
@@ -186,7 +188,7 @@ function mainHTML(p, ph) {
 
 function render() {
   if (holdRender) return;
-  const ph = phase(now()), p = mine();
+  const ph = gamePhase(), p = mine();
   if (me && !p) {
     app.innerHTML = loaded ? '<div class="empty-leaf"><h2>Player not found</h2><p class="dim">Your player is not in the current game.</p><p style="margin-top:16px"><button class="btn primary" data-logout>Join again</button></p></div>' : '<p class="dim">Loading the game…</p>';
     return;
@@ -200,7 +202,7 @@ function render() {
 }
 
 function tick() {
-  const ph = phase(now());
+  const ph = gamePhase();
   const k = ph.state;
   if (k !== lastPhase) { lastPhase = k; render(); return; }
   const cd = document.getElementById('cd'), bar = document.getElementById('bar');
@@ -209,7 +211,7 @@ function tick() {
 }
 
 async function ensureHand() {
-  const ph = phase(now()), p = mine();
+  const ph = gamePhase(), p = mine();
   if (ph.state !== 'live' || !p || busy || !needsHand(p)) return;
   busy = true;
   try { await db.mutate([me], ps => { const q = refresh(ps[me], ph.deck); return q ? { players: { [me]: q } } : {}; }); }
@@ -325,7 +327,7 @@ const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
 revealDlg.querySelector('form').addEventListener('submit', async e => {
   if (e.submitter?.value === 'no') return markFailed(revealDlg.dataset.mid, players.find(p => p.id === revealDlg.dataset.victim));
   if (e.submitter?.value !== 'ok') return;
-  const ph = phase(now());
+  const ph = gamePhase();
   if (ph.state !== 'live') return toast('No live wave right now.');
   const mid = revealDlg.dataset.mid;
   const victim = players.find(p => p.id === revealDlg.dataset.victim);
@@ -356,7 +358,7 @@ failDlg.querySelector('form').addEventListener('submit', e => {
 });
 
 async function markFailed(mid, by) {
-  if (phase(now()).state !== 'live') return toast('The game is not running right now.');
+  if (gamePhase().state !== 'live') return toast('The game is not running right now.');
   try {
     await db.mutate([me], ps => failIt(ps, me, mid, by && { id: by.id, name: by.name }, now()));
     toast(by ? `Mission failed. ${by.name} saw it coming.` : 'Mission failed.');
