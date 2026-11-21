@@ -18,7 +18,7 @@
   <form method="dialog">
     <h3 id="got-h">Who did you get?</h3>
     <p class="q" id="got-q"></p>
-    <p class="note">Tap the friend you got, in front of them. They confirm on your phone.</p>
+    <p class="note">Tap the friend you got, then show them the next screen.</p>
     <div class="pick" id="got-pick"></div>
     <button class="btn ghost block" value="cancel" formnovalidate>Cancel</button>
   </form>
@@ -315,9 +315,9 @@ document.getElementById('got-pick').addEventListener('click', e => {
   revealDlg.dataset.mid = gotDlg.dataset.mid;
   revealDlg.dataset.victim = victim.id;
   document.getElementById('reveal-h').textContent = `Gotcha, ${victim.name}!`;
-  document.getElementById('reveal-sub').textContent = `${mine().name} got you. The secret mission was:`;
+  document.getElementById('reveal-sub').textContent = `Show this to ${victim.name}.`;
   document.getElementById('reveal-mission').textContent = byId[gotDlg.dataset.mid]?.text ?? '';
-  document.getElementById('reveal-note').textContent = `${victim.name}, did you get caught?`;
+  document.getElementById('reveal-note').textContent = `${victim.name}, did ${mine().name} catch you?`;
   revealDlg.showModal();
 });
 
@@ -325,7 +325,7 @@ const pause = ms => new Promise(r => setTimeout(r, ms));
 const motionOK = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 revealDlg.querySelector('form').addEventListener('submit', async e => {
-  if (e.submitter?.value === 'no') return markFailed(revealDlg.dataset.mid, players.find(p => p.id === revealDlg.dataset.victim));
+  if (e.submitter?.value === 'no') return toast('Mission still in play.');
   if (e.submitter?.value !== 'ok') return;
   const ph = gamePhase();
   if (ph.state !== 'live') return toast('No live wave right now.');
@@ -346,7 +346,7 @@ revealDlg.querySelector('form').addEventListener('submit', async e => {
   render();
 });
 
-// Failed it: from the card (called out mid-attempt) or from the reveal (they saw it coming).
+// Failed it: the player was called out and marked the card themselves.
 const failDlg = document.getElementById('fail');
 function openFail(mid) {
   failDlg.dataset.mid = mid;
@@ -354,14 +354,14 @@ function openFail(mid) {
   failDlg.showModal();
 }
 failDlg.querySelector('form').addEventListener('submit', e => {
-  if (e.submitter?.value === 'ok') markFailed(failDlg.dataset.mid, null);
+  if (e.submitter?.value === 'ok') markFailed(failDlg.dataset.mid);
 });
 
-async function markFailed(mid, by) {
+async function markFailed(mid) {
   if (gamePhase().state !== 'live') return toast('The game is not running right now.');
   try {
-    await db.mutate([me], ps => failIt(ps, me, mid, by && { id: by.id, name: by.name }, now()));
-    toast(by ? `Mission failed. ${by.name} saw it coming.` : 'Mission failed.');
+    await db.mutate([me], ps => failIt(ps, me, mid, null, now()));
+    toast('Mission failed.');
   } catch (err) { toast(err.message); }
 }
 </script>

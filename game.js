@@ -181,7 +181,7 @@ export function howHTML() {
       <li class="step has-fork"><span class="step-ic">${icon('ask')}</span><h4>Did they see it coming?</h4>
         <div class="fork">
           <div class="branch yes"><span class="b-ic">${icon('check')}</span><b>Caught!</b><p>They tap <b>Yes, I got caught</b>. You get <b>+${GAME.points}</b> and a new mission.</p></div>
-          <div class="branch no"><span class="b-ic">${icon('eyeoff')}</span><b>Saw it coming</b><p>They tap <b>No</b>. Your mission fails and stays red. No new one.</p></div>
+          <div class="branch no"><span class="b-ic">${icon('eyeoff')}</span><b>They say no</b><p>They tap <b>No</b>. Keep playing the same mission.</p></div>
         </div></li>
       <li class="step has-fork"><span class="step-ic">${icon('shout')}</span><h4>Smell a setup? Call it out</h4>
         <div class="fork">
