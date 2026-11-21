@@ -13,6 +13,7 @@ export const GANGS = [
   { id: 'idc', name: 'Loky IDC friends' },
   { id: 'cousins', name: 'Cousins' },
   { id: 'wow', name: 'WOW Friends' },
+  { id: 'somi-sis', name: 'Somi Sis friends' },
 ];
 
 // Everyone who can play. Players join by tapping their photo and entering their PIN.
@@ -63,6 +64,23 @@ export const ROSTER = [
   { name: 'Suriya',    gang: 'wow', pin: '9369' },
   { name: 'Addy',      gang: 'wow', pin: '6302' },
   { name: 'Vicky',     gang: 'wow', pin: '8036' },
+  // Gang 4: Somi Sis friends
+  { name: 'Suba',        gang: 'somi-sis', pin: '4898' },
+  { name: 'Shruthi',     gang: 'somi-sis', pin: '5019' },
+  { name: 'Nidhi',       gang: 'somi-sis', pin: '2950' },
+  { name: 'Shreyas',     gang: 'somi-sis', pin: '5928' },
+  { name: 'Faheem',      gang: 'somi-sis', pin: '7187' },
+  { name: 'Praneeth',    gang: 'somi-sis', pin: '3223' },
+  { name: 'Shashi',      gang: 'somi-sis', pin: '6248' },
+  { name: 'Sid',         gang: 'somi-sis', pin: '2064' },
+  { name: 'Avadi (sid)', gang: 'somi-sis', pin: '8748' },
+  { name: 'Sailesh',     gang: 'somi-sis', pin: '0393' },
+  { name: 'Sesha',       gang: 'somi-sis', pin: '3798' },
+  { name: 'Shervin',     gang: 'somi-sis', pin: '0789' },
+  { name: 'Nithesh',     gang: 'somi-sis', pin: '7686' },
+  { name: 'Karthick',    gang: 'somi-sis', pin: '5751' },
+  { name: 'Kaushik',     gang: 'somi-sis', pin: '3601' },
+  { name: 'Keerthi',     gang: 'somi-sis', pin: '4798' },
 ];
 
 // Change to start a fresh game (e.g. 'wedding' after testing). Old data stays under the old id.

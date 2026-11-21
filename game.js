@@ -202,10 +202,12 @@ export function avatar(p, cls = '') {
   const src = rosterOf(p?.name, p?.gang)?.photo;
   if (src) return `<img class="av ${cls}" src="${esc(src)}" alt="">`;
   const name = (p?.name ?? '').trim() || '?';
-  const ini = name.split(/\s+/).map(w => [...w][0]).join('').slice(0, 2).toUpperCase();
+  const words = name.match(/\p{L}+/gu) ?? ['?'];
+  const letters = words.length > 1 ? words.slice(0, 2).map(word => [...word][0]) : [...words[0]].slice(0, 2);
+  const initials = letters.join('').toUpperCase();
   let h = 0;
   for (const c of name) h = (h * 31 + c.codePointAt(0)) >>> 0;
-  return `<span class="av av-c${h % 5} ${cls}" aria-hidden="true">${esc(ini)}</span>`;
+  return `<span class="av av-c${h % 5} ${cls}" aria-hidden="true">${esc(initials)}</span>`;
 }
 
 export const demoBanner = () => isDemo
