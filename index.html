@@ -108,7 +108,7 @@ function joinHTML(ph) {
   const hero = `<header class="hero">
       <h1>${title}</h1>
       <p class="script" lang="ta" aria-hidden="true">கல்யாணம் · <span lang="te">కళ్యాణం</span></p>
-      <p class="lede">Secret missions for the ${GANGS.map(g => esc(g.name).replace(/ /g, '&nbsp;')).join(' &amp; ')}, from the reception to the muhurtham.</p>
+      <p class="lede">Welcome to Loky and Haripriya’s wedding! Enjoy the game with your gang during your stay.</p>
     </header>`;
   const join = ROSTER.length ? whoHTML() : `<form id="join" class="panel">
       <label>Your name<input name="name" maxlength="24" required autocomplete="nickname" placeholder="What the gang calls you"></label>
